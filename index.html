@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jina — Rewarded Citizen Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --navy:#071A2C;
+  --cream:#F8F4EA;
+  --white:#FFFFFF;
+  --red:#8B1E2D;
+  --gold:#F4B942;
+  --grey:#E7EAF0;
+  --green:#2F855A;
+  --muted:#6B7280;
+  --radius:16px;
+  --shadow:0 4px 24px rgba(7,26,44,0.06);
+  --shadow-lg:0 8px 32px rgba(7,26,44,0.10);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--cream);
+  color:var(--navy);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:78px;
+}
+h1,h2,h3,h4{margin:0;letter-spacing:-0.02em;}
+p{margin:0;color:var(--muted);}
+button{font-family:inherit;cursor:pointer;}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+a{color:inherit;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important;}
+}
+
+/* ============ TOP BAR ============ */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(248,244,234,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--grey);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--navy),var(--red));
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-weight:800;font-size:16px;
+}
+.logo-text{font-weight:800;font-size:18px;}
+.logo-tag{display:none;font-size:12px;color:var(--muted);margin-left:8px;}
+.desktop-nav{display:none;gap:6px;}
+.desktop-nav button{
+  background:none;border:none;padding:8px 16px;border-radius:10px;
+  font-weight:600;font-size:14px;color:var(--muted);
+  transition:background .2s,color .2s;
+}
+.desktop-nav button.active{background:var(--navy);color:var(--white);}
+.desktop-nav button:not(.active):hover{background:var(--grey);color:var(--navy);}
+
+@media (min-width:880px){
+  .logo-tag{display:inline;}
+  .desktop-nav{display:flex;}
+  body{padding-bottom:0;}
+}
+
+/* ============ BOTTOM NAV (mobile) ============ */
+.bottomnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-around;align-items:center;
+  background:var(--white);
+  border-top:1px solid var(--grey);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+}
+.bottomnav button{
+  flex:1;background:none;border:none;display:flex;flex-direction:column;
+  align-items:center;gap:4px;padding:6px 2px;border-radius:10px;
+  font-size:11px;font-weight:600;color:var(--muted);min-height:44px;
+}
+.bottomnav button.active{color:var(--navy);}
+.bottomnav .ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.bottomnav button.active .ic{color:var(--red);}
+.bottomnav svg{width:20px;height:20px;}
+
+@media (min-width:880px){
+  .bottomnav{display:none;}
+}
+
+/* ============ LAYOUT ============ */
+main{max-width:1100px;margin:0 auto;padding:20px;}
+.page{display:none;animation:fadeUp .35s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.page-head{margin-bottom:18px;}
+.page-head h1{font-size:26px;font-weight:800;}
+.page-head p{margin-top:4px;font-size:14px;}
+
+/* ============ CARDS ============ */
+.card{
+  background:var(--white);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px;
+}
+.glass{
+  background:rgba(255,255,255,0.6);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.5);
+}
+.grid{display:grid;gap:14px;}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+
+/* metric card */
+.metric{padding:16px;}
+.metric .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;}
+.metric .value{font-size:28px;font-weight:800;margin-top:6px;}
+.metric .sub{font-size:12px;color:var(--muted);margin-top:4px;}
+
+/* ============ PROFILE SELECTOR ============ */
+.profile-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--navy);color:var(--white);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:18px;
+}
+.profile-bar .pb-label{font-size:12px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.profile-bar select{
+  background:rgba(255,255,255,0.08);color:var(--white);border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;font-family:inherit;
+}
+.profile-bar .pb-name{font-weight:700;font-size:15px;}
+.profile-bar .pb-org{font-size:12px;color:rgba(255,255,255,0.65);}
+
+/* ============ TABS ============ */
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px;}
+.tabs::-webkit-scrollbar{height:0;}
+.tabs button{
+  background:var(--grey);border:none;border-radius:10px;padding:9px 16px;
+  font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;
+  transition:background .2s,color .2s;
+}
+.tabs button.active{background:var(--navy);color:var(--white);}
+.tab-panel{display:none;animation:fadeUp .3s ease;}
+.tab-panel.active{display:block;}
+
+/* ============ FLOW STRIP ============ */
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:16px 0;}
+.flow .step{
+  background:var(--white);border:1px solid var(--grey);border-radius:10px;
+  padding:8px 14px;font-size:13px;font-weight:700;color:var(--navy);
+}
+.flow .arrow{color:var(--muted);font-size:14px;}
+
+/* ============ PROGRESS / BARS ============ */
+.bar-row{margin:10px 0;}
+.bar-row .bar-top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px;}
+.bar-track{height:8px;border-radius:6px;background:var(--grey);overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;background:var(--red);width:0;transition:width 1s ease;}
+.bar-fill.gold{background:var(--gold);}
+.bar-fill.green{background:var(--green);}
+.bar-fill.navy{background:var(--navy);}
+
+/* recommendation card */
+.reco{
+  background:linear-gradient(135deg,var(--navy),#11314f);color:var(--white);
+  border-radius:var(--radius);padding:22px;margin-top:18px;
+}
+.reco .rk{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:800;}
+.reco h2{font-size:22px;margin-top:8px;font-weight:800;}
+.reco p{color:rgba(255,255,255,0.7);margin-top:8px;font-size:14px;}
+
+/* ============ FORMS ============ */
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+input[type=text],input[type=number],select,textarea{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--grey);
+  font-family:inherit;font-size:14px;background:var(--white);color:var(--navy);
+}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);}
+.field{margin-bottom:14px;}
+.field-row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:12px;padding:12px 20px;font-weight:700;font-size:14px;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--navy);color:var(--white);}
+.btn-primary:hover{box-shadow:var(--shadow-lg);}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-outline{background:var(--white);color:var(--navy);border:1px solid var(--grey);}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-danger{background:var(--red);color:var(--white);}
+.btn-block{width:100%;}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:10px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* ============ BADGES ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:999px;
+}
+.badge-green{background:rgba(47,133,90,0.12);color:var(--green);}
+.badge-gold{background:rgba(244,185,66,0.18);color:#9a6c0d;}
+.badge-grey{background:var(--grey);color:var(--muted);}
+.badge-red{background:rgba(139,30,45,0.1);color:var(--red);}
+
+/* ============ TABLE ============ */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow);background:var(--white);}
+table{width:100%;border-collapse:collapse;min-width:760px;}
+th,td{padding:12px 14px;text-align:left;font-size:13px;border-bottom:1px solid var(--grey);white-space:nowrap;}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;background:var(--cream);}
+tr:last-child td{border-bottom:none;}
+
+/* ============ DONUT ============ */
+.donut-wrap{display:flex;align-items:center;gap:14px;}
+.donut-val{font-size:24px;font-weight:800;}
+
+/* ============ CITIZEN PHONE ============ */
+.phone-frame{
+  max-width:380px;margin:0 auto;background:var(--navy);border-radius:32px;
+  padding:14px;box-shadow:var(--shadow-lg);
+}
+.phone-screen{
+  background:var(--cream);border-radius:22px;overflow:hidden;min-height:560px;
+  display:flex;flex-direction:column;
+}
+.phone-head{
+  padding:18px 20px 14px;background:var(--white);display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--grey);
+}
+.phone-head .ptitle{font-weight:800;font-size:16px;}
+.phone-body{padding:18px;flex:1;display:flex;flex-direction:column;gap:14px;}
+.wallet-pill{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--navy);color:var(--white);border-radius:14px;padding:14px 16px;
+}
+.wallet-pill .wv{font-size:22px;font-weight:800;color:var(--gold);}
+.trust-pill{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;}
+.opt-btn{
+  display:block;width:100%;text-align:left;background:var(--white);border:1px solid var(--grey);
+  border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600;margin-bottom:10px;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.opt-btn.selected{border-color:var(--gold);background:rgba(244,185,66,0.12);box-shadow:0 0 0 3px rgba(244,185,66,0.18);}
+.qprogress{display:flex;gap:5px;margin-bottom:6px;}
+.qprogress span{flex:1;height:5px;border-radius:4px;background:var(--grey);}
+.qprogress span.done{background:var(--gold);}
+
+/* ============ PROFILE CARDS ============ */
+.profile-card{position:relative;}
+.profile-card.active{border:2px solid var(--gold);}
+.profile-card h3{font-size:17px;margin-bottom:2px;}
+.profile-card .org{font-size:13px;color:var(--muted);margin-bottom:10px;}
+.profile-card .pmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+
+/* ============ SURVEY BUILDER ============ */
+.survey-card{cursor:pointer;border:2px solid transparent;transition:border-color .2s;}
+.survey-card.active{border-color:var(--gold);}
+.survey-card h3{font-size:16px;}
+.q-block{border:1px solid var(--grey);border-radius:12px;padding:14px;margin-bottom:12px;}
+.q-block .opt-edit{display:flex;gap:8px;margin-bottom:8px;}
+.q-block .opt-edit input{flex:1;}
+.icon-btn{
+  background:none;border:none;color:var(--muted);font-size:16px;padding:4px 8px;border-radius:8px;
+}
+.icon-btn:hover{background:var(--grey);color:var(--red);}
+
+/* ============ MODAL ============ */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(7,26,44,0.45);display:flex;align-items:center;justify-content:center;
+  z-index:200;padding:20px;
+}
+.modal{background:var(--white);border-radius:var(--radius);padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow-lg);}
+.modal h3{margin-bottom:8px;}
+.modal p{margin-bottom:18px;font-size:14px;}
+
+/* ============ TOAST ============ */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--navy);color:var(--white);padding:12px 20px;border-radius:12px;
+  font-size:13px;font-weight:600;opacity:0;transition:opacity .3s,transform .3s;z-index:300;
+  box-shadow:var(--shadow-lg);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media (min-width:880px){.toast{bottom:30px;}}
+
+/* ============ MISC ============ */
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:10px;}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.filters select,.filters input{width:auto;min-width:140px;}
+footer{text-align:center;padding:28px 20px;font-size:12px;color:var(--muted);}
+.input-label-inline{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px;display:block;}
+.success-state{text-align:center;padding:30px 10px;}
+.success-state .pts{font-size:40px;font-weight:800;color:var(--gold);}
+.success-state h3{margin:10px 0 6px;}
+hr.div{border:none;border-top:1px solid var(--grey);margin:18px 0;}
+.muted-small{font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark">J</div>
+    <div>
+      <div class="logo-text">Jina</div>
+    </div>
+    <span class="logo-tag">Rewarded citizen feedback for smarter decisions</span>
+  </div>
+  <nav class="desktop-nav" aria-label="Main navigation">
+    <button data-page="institution">Institution</button>
+    <button data-page="citizen">Citizen</button>
+    <button data-page="profiles">Profiles</button>
+    <button data-page="surveys">Surveys</button>
+    <button data-page="system">System</button>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ============ INSTITUTION ============ -->
+  <section id="page-institution" class="page active" aria-label="Institution Console">
+    <div class="page-head">
+      <h1>Patient Experience Pulse</h1>
+      <p>Collect decision-ready patient experience data.</p>
+    </div>
+
+    <div class="profile-bar">
+      <span class="pb-label">Active profile</span>
+      <select id="institutionProfileSelect" aria-label="Select active profile"></select>
+      <div>
+        <div class="pb-name" id="instProfileName">—</div>
+        <div class="pb-org" id="instProfileOrg">—</div>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Institution dashboard tabs">
+      <button class="active" data-tab="overview" role="tab">Overview</button>
+      <button data-tab="targeting" role="tab">Targeting</button>
+      <button data-tab="insights" role="tab">Insights</button>
+      <button data-tab="responses" role="tab">Responses</button>
+      <button data-tab="export" role="tab">Export</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="grid grid-4" id="overviewMetrics"></div>
+
+      <div class="section-title" style="margin-top:22px;">Core flow</div>
+      <div class="flow">
+        <div class="step">Ask</div><span class="arrow">→</span>
+        <div class="step">Target</div><span class="arrow">→</span>
+        <div class="step">Answer</div><span class="arrow">→</span>
+        <div class="step">Reward</div><span class="arrow">→</span>
+        <div class="step">Decide</div>
+      </div>
+
+      <div class="reco">
+        <div class="rk">Recommendation</div>
+        <h2 id="overviewReco">Fix registration queue first.</h2>
+        <p id="overviewRecoSub">Based on the most-selected improvement area from current responses.</p>
+      </div>
+    </div>
+
+    <!-- TARGETING -->
+    <div class="tab-panel" id="tab-targeting">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="field">
+            <label for="tgGroup">Target group</label>
+            <input type="text" id="tgGroup">
+          </div>
+          <div class="field">
+            <label for="tgWindow">Visit window</label>
+            <input type="text" id="tgWindow">
+          </div>
+          <div class="field">
+            <label for="tgResponses">Target responses</label>
+            <input type="number" id="tgResponses" min="1">
+          </div>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label for="tgLocations">Locations (comma separated)</label>
+            <input type="text" id="tgLocations">
+          </div>
+          <div class="field">
+            <label for="tgAge">Age</label>
+            <input type="text" id="tgAge">
+          </div>
+          <div class="muted-small">Targeting controls who Jina invites to participate, and how many responses are needed for a confident result.</div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" id="saveTargetingBtn">Save Targeting</button>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="tab-panel" id="tab-insights">
+      <div class="grid grid-3" id="insightCards"></div>
+      <div class="reco" style="margin-top:18px;">
+        <div class="rk">Top priority</div>
+        <h2 id="insightTopPriority">—</h2>
+        <p id="insightReco">—</p>
+      </div>
+    </div>
+
+    <!-- RESPONSES -->
+    <div class="tab-panel" id="tab-responses">
+      <div class="filters">
+        <select id="filterLocation" aria-label="Filter by location"><option value="">All locations</option></select>
+        <select id="filterPriority" aria-label="Filter by priority"><option value="">All priorities</option></select>
+        <select id="filterSurvey" aria-label="Filter by survey"><option value="">All surveys</option></select>
+        <select id="filterProfile" aria-label="Filter by profile"><option value="">All profiles</option></select>
+        <input type="text" id="filterSearch" placeholder="Search…" aria-label="Search responses">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Time</th><th>Profile</th><th>Survey</th><th>Location</th>
+            <th>Waiting</th><th>Medicine</th><th>Navigation</th><th>Respect</th>
+            <th>Priority</th><th>Trust</th><th>Points</th>
+          </tr></thead>
+          <tbody id="responsesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="tab-panel" id="tab-export">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Download Excel</h3>
+          <p style="margin:8px 0 14px;">Responses, surveys, profiles and insight summary in one workbook.</p>
+          <button class="btn btn-primary btn-block" id="exportExcelBtn">Download Excel</button>
+        </div>
+        <div class="card">
+          <h3>Export JSON</h3>
+          <p style="margin:8px 0 14px;">Full structured dataset for integration or backup.</p>
+          <button class="btn btn-outline btn-block" id="exportJsonBtn">Export JSON</button>
+        </div>
+        <div class="card">
+          <h3>Export CSV</h3>
+          <p style="margin:8px 0 14px;">Response table as a CSV file for spreadsheets.</p>
+          <button class="btn btn-outline btn-block" id="exportCsvBtn">Export CSV</button>
+        </div>
+        <div class="card">
+          <h3>Copy Insight Summary</h3>
+          <p style="margin:8px 0 14px;">A clean text summary, ready to paste into a report.</p>
+          <button class="btn btn-outline btn-block" id="copySummaryBtn">Copy Insight Summary</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CITIZEN ============ -->
+  <section id="page-citizen" class="page" aria-label="Citizen App">
+    <div class="page-head">
+      <h1>Citizen App</h1>
+      <p>Answer rewarded surveys and track your Jina Points.</p>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="phone-head">
+          <span class="ptitle">Jina</span>
+          <span class="badge badge-gold">Citizen Profile</span>
+        </div>
+        <div class="phone-body" id="citizenBody"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILES ============ -->
+  <section id="page-profiles" class="page" aria-label="Profile Manager">
+    <div class="page-head">
+      <h1>Profiles</h1>
+      <p>Allow different organization types to use Jina.</p>
+    </div>
+    <div class="grid grid-2" id="profilesGrid"></div>
+  </section>
+
+  <!-- ============ SURVEYS ============ -->
+  <section id="page-surveys" class="page" aria-label="Survey Builder">
+    <div class="page-head">
+      <h1>Survey Builder</h1>
+      <p>Create, target and reward citizen feedback.</p>
+    </div>
+    <div class="btn-row" style="margin-bottom:16px;">
+      <button class="btn btn-primary" id="newSurveyBtn">Create Survey</button>
+    </div>
+    <div class="grid grid-3" id="surveysGrid" style="margin-bottom:22px;"></div>
+    <div id="surveyEditorWrap"></div>
+  </section>
+
+  <!-- ============ SYSTEM ============ -->
+  <section id="page-system" class="page" aria-label="System Manager">
+    <div class="page-head">
+      <h1>System</h1>
+      <p>Manage data stored locally in this browser.</p>
+    </div>
+    <div class="grid grid-3" id="systemCards" style="margin-bottom:20px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="loadRecordsBtn">Load Records</button>
+      <button class="btn btn-outline" id="sysDownloadJsonBtn">Download JSON</button>
+      <button class="btn btn-outline" id="sysDownloadExcelBtn">Download Excel</button>
+      <button class="btn btn-outline" id="resetWalletBtn">Reset Wallet</button>
+      <button class="btn btn-danger" id="clearDataBtn">Clear Data</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>Data is stored locally in this browser.</footer>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="bottomnav" aria-label="Mobile navigation">
+  <button class="active" data-page="institution">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v9h14v-9"/></svg></span>
+    Institution
+  </button>
+  <button data-page="citizen">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/></svg></span>
+    Citizen
+  </button>
+  <button data-page="profiles">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+    Profiles
+  </button>
+  <button data-page="surveys">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+    Surveys
+  </button>
+  <button data-page="system">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span>
+    System
+  </button>
+</nav>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   JINA — APPLICATION SCRIPT
+   Single-file vanilla JS app with localStorage persistence
+   ========================================================= */
+
+/* ---------- SAFE STORAGE HELPERS ---------- */
+function safeGet(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(raw === null) return fallback;
+    return JSON.parse(raw);
+  }catch(e){
+    return fallback;
+  }
+}
+function safeSet(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* ignore */ }
+}
+
+/* ---------- DEFAULT DATA ---------- */
+const DEFAULT_PROFILES = [
+  { id:'p1', name:'Citizen Profile', type:'Individual voice', organization:'—', location:'Thimphu', useCase:'Earn Jina Points by sharing trusted feedback.', status:'Active' },
+  { id:'p2', name:'Company Profile', type:'Private company', organization:'Bhutan Growth Company', location:'Thimphu', useCase:'Collect targeted customer and employee feedback.', status:'Active' },
+  { id:'p3', name:'Government Office Profile', type:'Public service office', organization:'Public Service Office', location:'Thimphu', useCase:'Collect citizen feedback for service delivery improvement.', status:'Active' },
+  { id:'p4', name:'Hospital Profile', type:'Health institution', organization:'Hospital Service Team', location:'Thimphu', useCase:'Collect patient experience feedback to improve service quality.', status:'Active' }
+];
+
+const DEFAULT_SURVEYS = [
+  {
+    id:'s1', title:'Patient Experience Pulse', owner:'Hospital Service Team', category:'Healthcare',
+    time:'2 minutes', points:40, description:'Hospital service feedback', targetGroup:'OPD patients', status:'Active',
+    questions:[
+      { id:'q1', text:'How long did you wait?', options:['Under 15 min','15–30 min','30–60 min','Over 60 min'] },
+      { id:'q2', text:'Were medicine instructions clear?', options:['Very clear','Somewhat clear','Not clear','Did not receive medicine'] },
+      { id:'q3', text:'Was hospital navigation easy?', options:['Easy','Okay','Confusing','Very confusing'] },
+      { id:'q4', text:'Was the service respectful?', options:['Yes','Mostly','Not really','No'] },
+      { id:'q5', text:'What should improve first?', options:['Registration queue','Medicine instructions','Cleanliness','Signage','Staff communication','Waiting area'] }
+    ]
+  },
+  {
+    id:'s2', title:'Customer Service Pulse', owner:'Bhutan Growth Company', category:'Company',
+    time:'2 minutes', points:30, description:'Customer experience feedback', targetGroup:'Recent customers', status:'Active',
+    questions:[
+      { id:'q1', text:'How would you rate our service?', options:['Excellent','Good','Average','Poor'] },
+      { id:'q2', text:'Was your issue resolved?', options:['Yes, fully','Partially','Not resolved','Did not need resolution'] },
+      { id:'q3', text:'How responsive was our team?', options:['Very responsive','Somewhat responsive','Slow','Did not respond'] },
+      { id:'q4', text:'Would you recommend us?', options:['Definitely','Probably','Not sure','No'] },
+      { id:'q5', text:'What should improve first?', options:['Response time','Staff communication','Product quality','Pricing clarity','Support availability','Other'] }
+    ]
+  },
+  {
+    id:'s3', title:'Public Service Access Pulse', owner:'Public Service Office', category:'Government Office',
+    time:'2 minutes', points:35, description:'Service access feedback', targetGroup:'Recent visitors', status:'Active',
+    questions:[
+      { id:'q1', text:'How easy was it to access this service?', options:['Very easy','Easy','Difficult','Very difficult'] },
+      { id:'q2', text:'How long did you wait?', options:['Under 15 min','15–30 min','30–60 min','Over 60 min'] },
+      { id:'q3', text:'Was the staff helpful?', options:['Yes','Mostly','Not really','No'] },
+      { id:'q4', text:'Was information clearly displayed?', options:['Yes','Somewhat','No'] },
+      { id:'q5', text:'What should improve first?', options:['Waiting time','Signage','Staff helpfulness','Online access','Office hours','Documentation process'] }
+    ]
+  },
+  {
+    id:'s4', title:'Community Needs Pulse', owner:'Citizen Engagement Unit', category:'Citizen Engagement',
+    time:'2 minutes', points:25, description:'Local community needs feedback', targetGroup:'Local residents', status:'Active',
+    questions:[
+      { id:'q1', text:'How safe do you feel in your neighborhood?', options:['Very safe','Safe','Somewhat unsafe','Unsafe'] },
+      { id:'q2', text:'How would you rate local infrastructure?', options:['Good','Fair','Poor'] },
+      { id:'q3', text:'Are community services accessible?', options:['Yes','Somewhat','No'] },
+      { id:'q4', text:'How connected do you feel to local decisions?', options:['Very connected','Somewhat connected','Not at all'] },
+      { id:'q5', text:'What should improve first?', options:['Roads','Waste management','Public spaces','Water supply','Street lighting','Community programs'] }
+    ]
+  }
+];
+
+const DEFAULT_TARGETING = {
+  group:'OPD patients',
+  window:'Last 30 days',
+  locations:['Thimphu','Paro','Punakha'],
+  age:'18+',
+  target:300
+};
+
+const LOCATIONS = ['Thimphu','Paro','Punakha','Wangdue','Mongar','Trongsa'];
+
+/* ---------- RECOMMENDATION LOGIC ---------- */
+const HEALTH_RECO = {
+  'Registration queue':'Fix registration queue first.',
+  'Medicine instructions':'Improve pharmacy instruction flow.',
+  'Signage':'Improve OPD wayfinding.',
+  'Staff communication':'Strengthen communication at service points.',
+  'Cleanliness':'Prioritize cleanliness monitoring.',
+  'Waiting area':'Improve waiting area comfort.'
+};
+const COMPANY_RECO = {
+  'Response time':'Reduce average response time for customer queries.',
+  'Staff communication':'Improve clarity of staff-customer communication.',
+  'Product quality':'Prioritize product quality review.',
+  'Pricing clarity':'Improve transparency of pricing information.',
+  'Support availability':'Extend support availability for customers.',
+  'Other':'Review open feedback for emerging issues.'
+};
+const GOV_RECO = {
+  'Waiting time':'Reduce waiting time at service counters.',
+  'Signage':'Improve office wayfinding and signage.',
+  'Staff helpfulness':'Reinforce front-desk service training.',
+  'Online access':'Expand online access to this service.',
+  'Office hours':'Review office hours against citizen demand.',
+  'Documentation process':'Simplify required documentation steps.'
+};
+const COMMUNITY_RECO = {
+  'Roads':'Prioritize road maintenance in this area.',
+  'Waste management':'Improve waste collection schedules.',
+  'Public spaces':'Invest in public space upkeep.',
+  'Water supply':'Address water supply reliability.',
+  'Street lighting':'Improve street lighting coverage.',
+  'Community programs':'Expand local community programs.'
+};
+function recoFor(category, priority){
+  let map = HEALTH_RECO;
+  if(category==='Company') map = COMPANY_RECO;
+  else if(category==='Government Office') map = GOV_RECO;
+  else if(category==='Citizen Engagement') map = COMMUNITY_RECO;
+  return map[priority] || ('Review "' + priority + '" as the top improvement area.');
+}
+
+/* ---------- APP STATE ---------- */
+let surveys, profiles, responses, wallet, targeting, activeProfileId, activeSurveyId, settings;
+
+function loadState(){
+  surveys = safeGet('jina_surveys', null) || DEFAULT_SURVEYS;
+  profiles = safeGet('jina_profiles', null) || DEFAULT_PROFILES;
+  responses = safeGet('jina_responses', null) || [];
+  wallet = safeGet('jina_wallet', null);
+  if(typeof wallet !== 'number') wallet = 0;
+  targeting = safeGet('jina_targeting', null) || DEFAULT_TARGETING;
+  activeProfileId = safeGet('jina_active_profile', null) || 'p4';
+  activeSurveyId = safeGet('jina_active_survey', null) || 's1';
+  settings = safeGet('jina_settings', null) || { lastUpdated: new Date().toISOString() };
+
+  if(!surveys.length) surveys = DEFAULT_SURVEYS;
+  if(!profiles.length) profiles = DEFAULT_PROFILES;
+  if(!surveys.find(s=>s.id===activeSurveyId)) activeSurveyId = surveys[0].id;
+  if(!profiles.find(p=>p.id===activeProfileId)) activeProfileId = profiles[0].id;
+
+  if(responses.length === 0){
+    responses = generateSeedResponses();
+    save('responses');
+    save('wallet', 180);
+    wallet = 180;
+  }
+  saveAll();
+}
+
+function save(what, val){
+  if(what==='surveys') safeSet('jina_surveys', surveys);
+  else if(what==='profiles') safeSet('jina_profiles', profiles);
+  else if(what==='responses') safeSet('jina_responses', responses);
+  else if(what==='wallet'){ if(val!==undefined) wallet = val; safeSet('jina_wallet', wallet); }
+  else if(what==='targeting') safeSet('jina_targeting', targeting);
+  else if(what==='activeProfile') safeSet('jina_active_profile', activeProfileId);
+  else if(what==='activeSurvey') safeSet('jina_active_survey', activeSurveyId);
+  else if(what==='settings'){ settings.lastUpdated = new Date().toISOString(); safeSet('jina_settings', settings); }
+}
+function saveAll(){
+  save('surveys'); save('profiles'); save('responses'); save('wallet');
+  save('targeting'); save('activeProfile'); save('activeSurvey'); save('settings');
+}
+
+/* ---------- SEED RESPONSE GENERATION ---------- */
+function generateSeedResponses(){
+  const out = [];
+  const now = Date.now();
+  for(let i=0;i<32;i++){
+    const survey = surveys[i % surveys.length];
+    const profile = profiles[(i+1) % profiles.length];
+    const loc = LOCATIONS[i % LOCATIONS.length];
+    const daysAgo = Math.floor(Math.random()*14);
+    const time = new Date(now - daysAgo*86400000 - Math.floor(Math.random()*43200000)).toISOString();
+    const trust = 86 + Math.floor(Math.random()*13);
+
+    let waiting='-', medicine='-', navigation='-', respect='-', priority='-';
+    const lastQ = survey.questions[survey.questions.length-1];
+    priority = lastQ.options[i % lastQ.options.length];
+
+    if(survey.category === 'Healthcare'){
+      waiting = survey.questions[0].options[i % survey.questions[0].options.length];
+      medicine = survey.questions[1].options[(i+1) % survey.questions[1].options.length];
+      navigation = survey.questions[2].options[(i+2) % survey.questions[2].options.length];
+      respect = survey.questions[3].options[(i+1) % survey.questions[3].options.length];
+    }
+
+    out.push({
+      time, profileId:profile.id, surveyId:survey.id, location:loc,
+      waiting, medicine, navigation, respect, priority,
+      trust, points: survey.points
+    });
+  }
+  return out;
+}
+
+/* ---------- COMPUTED INSIGHTS ---------- */
+function computeInsights(){
+  const activeSurvey = surveys.find(s=>s.id===activeSurveyId) || surveys[0];
+  const all = responses;
+  const total = all.length;
+  const rewardTotal = all.reduce((a,r)=>a+(r.points||0),0);
+  const avgTrust = total ? Math.round(all.reduce((a,r)=>a+(r.trust||0),0)/total) : 0;
+
+  const healthResp = all.filter(r=>{
+    const sv = surveys.find(s=>s.id===r.surveyId);
+    return sv && sv.category === 'Healthcare';
+  });
+  const hTotal = healthResp.length || 1;
+  const longWait = healthResp.filter(r=>r.waiting==='30–60 min'||r.waiting==='Over 60 min').length;
+  const medClarity = healthResp.filter(r=>r.medicine==='Not clear'||r.medicine==='Did not receive medicine').length;
+  const navIssue = healthResp.filter(r=>r.navigation==='Confusing'||r.navigation==='Very confusing').length;
+  const respectPos = healthResp.filter(r=>r.respect==='Yes'||r.respect==='Mostly').length;
+
+  // top priority across responses of the active survey (fallback: all responses)
+  const scoped = all.filter(r=>r.surveyId===activeSurveyId);
+  const pool = scoped.length ? scoped : all;
+  const counts = {};
+  pool.forEach(r=>{ if(r.priority && r.priority!=='-') counts[r.priority] = (counts[r.priority]||0)+1; });
+  let topPriority = '—', topCount = 0;
+  Object.keys(counts).forEach(k=>{ if(counts[k]>topCount){ topCount=counts[k]; topPriority=k; } });
+
+  const target = targeting.target || 1;
+  const progress = Math.min(100, Math.round((total/target)*100));
+
+  const byLocation = {}; LOCATIONS.forEach(l=>byLocation[l]=0);
+  all.forEach(r=>{ if(byLocation[r.location]!==undefined) byLocation[r.location]++; });
+
+  const bySurvey = {}; surveys.forEach(s=>bySurvey[s.id]=0);
+  all.forEach(r=>{ if(bySurvey[r.surveyId]!==undefined) bySurvey[r.surveyId]++; });
+
+  const byProfile = {}; profiles.forEach(p=>byProfile[p.id]=0);
+  all.forEach(r=>{ if(byProfile[r.profileId]!==undefined) byProfile[r.profileId]++; });
+
+  return {
+    total, rewardTotal, avgTrust,
+    longWaitPct: Math.round((longWait/hTotal)*100) * (healthResp.length?1:0),
+    medClarityPct: Math.round((medClarity/hTotal)*100) * (healthResp.length?1:0),
+    navIssuePct: Math.round((navIssue/hTotal)*100) * (healthResp.length?1:0),
+    respectPct: Math.round((respectPos/hTotal)*100) * (healthResp.length?1:0),
+    topPriority, topCount, progress,
+    byLocation, bySurvey, byProfile,
+    activeSurvey
+  };
+}
+
+/* ---------- UTILS ---------- */
+function fmtDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' · ' +
+         d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+}
+function getProfile(id){ return profiles.find(p=>p.id===id) || profiles[0]; }
+function getSurvey(id){ return surveys.find(s=>s.id===id) || surveys[0]; }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function donutSVG(pct, color){
+  const r=30, c=2*Math.PI*r, off = c - (c*pct/100);
+  return '<svg width="76" height="76" viewBox="0 0 76 76">'+
+    '<circle cx="38" cy="38" r="'+r+'" fill="none" stroke="var(--grey)" stroke-width="8"/>'+
+    '<circle cx="38" cy="38" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="8" '+
+    'stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" stroke-linecap="round" '+
+    'transform="rotate(-90 38 38)" style="transition:stroke-dashoffset 1s ease"/>'+
+    '</svg>';
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+const pages = ['institution','citizen','profiles','surveys','system'];
+function setActivePage(name){
+  pages.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('active', p===name);
+  });
+  document.querySelectorAll('.desktop-nav button, .bottomnav button').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.page===name);
+  });
+  if(name==='institution') renderInstitution();
+  if(name==='citizen') renderCitizen();
+  if(name==='profiles') renderProfiles();
+  if(name==='surveys') renderSurveys();
+  if(name==='system') renderSystem();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-page]').forEach(btn=>{
+  btn.addEventListener('click', ()=>setActivePage(btn.dataset.page));
+});
+
+/* =========================================================
+   INSTITUTION CONSOLE
+   ========================================================= */
+let currentInstTab = 'overview';
+
+function renderInstitution(){
+  // profile selector
+  const sel = document.getElementById('institutionProfileSelect');
+  sel.innerHTML = profiles.map(p=>'<option value="'+p.id+'"'+(p.id===activeProfileId?' selected':'')+'>'+p.name+'</option>').join('');
+  const ap = getProfile(activeProfileId);
+  document.getElementById('instProfileName').textContent = ap.name;
+  document.getElementById('instProfileOrg').textContent = ap.organization;
+
+  // tabs
+  document.querySelectorAll('#page-institution .tabs button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===currentInstTab);
+  });
+  ['overview','targeting','insights','responses','export'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active', t===currentInstTab);
+  });
+
+  renderOverview();
+  renderTargetingForm();
+  renderInsights();
+  renderResponsesTable();
+}
+
+document.getElementById('institutionProfileSelect').addEventListener('change', e=>{
+  activeProfileId = e.target.value;
+  save('activeProfile');
+  renderInstitution();
+  renderCitizen();
+  renderProfiles();
+});
+
+document.querySelectorAll('#page-institution .tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentInstTab = btn.dataset.tab;
+    renderInstitution();
+  });
+});
+
+/* ---------- OVERVIEW ---------- */
+function renderOverview(){
+  const ins = computeInsights();
+  const ap = getProfile(activeProfileId);
+  const activeSurvey = getSurvey(activeSurveyId);
+
+  const metrics = [
+    {label:'Total responses', value: ins.total, sub:'All profiles & surveys'},
+    {label:'Reward points distributed', value: ins.rewardTotal.toLocaleString(), sub:'Jina Points'},
+    {label:'Trust score', value: ins.avgTrust, sub:'Average across responses'},
+    {label:'Top issue', value: ins.topPriority, sub:'Most selected improvement'},
+    {label:'Completion progress', value: ins.progress + '%', sub:'of target ' + (targeting.target||0)},
+    {label:'Active survey', value: activeSurvey.title, sub: activeSurvey.category},
+    {label:'Active profile', value: ap.name, sub: ap.organization}
+  ];
+  document.getElementById('overviewMetrics').innerHTML = metrics.map(m=>
+    '<div class="card metric"><div class="label">'+m.label+'</div><div class="value">'+m.value+'</div><div class="sub">'+m.sub+'</div></div>'
+  ).join('');
+
+  document.getElementById('overviewReco').textContent = recoFor(activeSurvey.category, ins.topPriority==='—' ? 'Registration queue' : ins.topPriority);
+  document.getElementById('overviewRecoSub').textContent = 'Based on "' + ins.topPriority + '" as the most-selected improvement area for ' + activeSurvey.title + '.';
+
+  // animate bars after paint
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(el=>{
+      el.style.width = el.dataset.target || '0%';
+    });
+  });
+}
+
+/* ---------- TARGETING ---------- */
+function renderTargetingForm(){
+  document.getElementById('tgGroup').value = targeting.group;
+  document.getElementById('tgWindow').value = targeting.window;
+  document.getElementById('tgResponses').value = targeting.target;
+  document.getElementById('tgLocations').value = (targeting.locations||[]).join(', ');
+  document.getElementById('tgAge').value = targeting.age;
+}
+document.getElementById('saveTargetingBtn').addEventListener('click', ()=>{
+  targeting.group = document.getElementById('tgGroup').value.trim() || targeting.group;
+  targeting.window = document.getElementById('tgWindow').value.trim() || targeting.window;
+  targeting.target = parseInt(document.getElementById('tgResponses').value,10) || targeting.target;
+  targeting.locations = document.getElementById('tgLocations').value.split(',').map(s=>s.trim()).filter(Boolean);
+  targeting.age = document.getElementById('tgAge').value.trim() || targeting.age;
+  save('targeting'); save('settings');
+  showToast('Targeting saved');
+  renderOverview();
+});
+
+/* ---------- INSIGHTS ---------- */
+function renderInsights(){
+  const ins = computeInsights();
+  const cards = [
+    {title:'Waiting time', pct: ins.longWaitPct, desc:'of patients report waits of 30 minutes or more', color:'var(--red)'},
+    {title:'Medicine clarity', pct: ins.medClarityPct, desc:'need clearer medicine instructions', color:'var(--gold)'},
+    {title:'Navigation', pct: ins.navIssuePct, desc:'find hospital navigation confusing', color:'var(--navy)'},
+    {title:'Service respect', pct: ins.respectPct, desc:'report respectful service', color:'var(--green)'}
+  ];
+  let html = cards.map(c=>
+    '<div class="card">'+
+      '<div class="donut-wrap">'+donutSVG(c.pct, c.color)+
+      '<div><div class="donut-val">'+c.pct+'%</div><div class="muted-small">'+c.desc+'</div></div></div>'+
+      '<div class="section-title" style="margin-top:14px;">'+c.title+'</div>'+
+    '</div>'
+  ).join('');
+
+  html += '<div class="card">'+
+    '<div class="section-title">Top priority</div>'+
+    '<h3 style="font-size:18px;margin-bottom:6px;">'+ins.topPriority+'</h3>'+
+    '<p class="muted-small">Most selected improvement area for '+ins.activeSurvey.title+'</p>'+
+  '</div>';
+
+  html += '<div class="card">'+
+    '<div class="section-title">Responses by location</div>'+
+    Object.entries(ins.byLocation).filter(([,v])=>v>0).map(([loc,v])=>{
+      const pct = Math.round((v/ins.total)*100) || 0;
+      return '<div class="bar-row"><div class="bar-top"><span>'+loc+'</span><span>'+v+'</span></div>'+
+        '<div class="bar-track"><div class="bar-fill navy" data-target="'+pct+'%"></div></div></div>';
+    }).join('') +
+  '</div>';
+
+  document.getElementById('insightCards').innerHTML = html;
+  document.getElementById('insightTopPriority').textContent = ins.topPriority;
+  document.getElementById('insightReco').textContent = recoFor(ins.activeSurvey.category, ins.topPriority==='—'?'Registration queue':ins.topPriority);
+
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('#tab-insights .bar-fill').forEach(el=>{ el.style.width = el.dataset.target; });
+  });
+}
+
+/* ---------- RESPONSES TABLE ---------- */
+function renderResponsesTable(){
+  // populate filter selects
+  const locSel = document.getElementById('filterLocation');
+  const prioSel = document.getElementById('filterPriority');
+  const surveySel = document.getElementById('filterSurvey');
+  const profSel = document.getElementById('filterProfile');
+
+  if(locSel.options.length<=1){
+    LOCATIONS.forEach(l=>locSel.insertAdjacentHTML('beforeend','<option value="'+l+'">'+l+'</option>'));
+  }
+  if(prioSel.options.length<=1){
+    const allPriorities = new Set();
+    surveys.forEach(s=> s.questions[s.questions.length-1].options.forEach(o=>allPriorities.add(o)));
+    [...allPriorities].forEach(p=>prioSel.insertAdjacentHTML('beforeend','<option value="'+p+'">'+p+'</option>'));
+  }
+  if(surveySel.options.length<=1){
+    surveys.forEach(s=>surveySel.insertAdjacentHTML('beforeend','<option value="'+s.id+'">'+s.title+'</option>'));
+  }
+  if(profSel.options.length<=1){
+    profiles.forEach(p=>profSel.insertAdjacentHTML('beforeend','<option value="'+p.id+'">'+p.name+'</option>'));
+  }
+
+  drawResponsesRows();
+}
+['filterLocation','filterPriority','filterSurvey','filterProfile','filterSearch'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', drawResponsesRows);
+});
+
+function drawResponsesRows(){
+  const loc = document.getElementById('filterLocation').value;
+  const prio = document.getElementById('filterPriority').value;
+  const sv = document.getElementById('filterSurvey').value;
+  const pf = document.getElementById('filterProfile').value;
+  const q = document.getElementById('filterSearch').value.toLowerCase();
+
+  const rows = responses.filter(r=>{
+    if(loc && r.location!==loc) return false;
+    if(prio && r.priority!==prio) return false;
+    if(sv && r.surveyId!==sv) return false;
+    if(pf && r.profileId!==pf) return false;
+    if(q){
+      const hay = [getProfile(r.profileId).name, getSurvey(r.surveyId).title, r.location, r.priority].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }).slice().sort((a,b)=> new Date(b.time)-new Date(a.time));
+
+  document.getElementById('responsesBody').innerHTML = rows.map(r=>
+    '<tr>'+
+      '<td>'+fmtDate(r.time)+'</td>'+
+      '<td>'+getProfile(r.profileId).name+'</td>'+
+      '<td>'+getSurvey(r.surveyId).title+'</td>'+
+      '<td>'+r.location+'</td>'+
+      '<td>'+r.waiting+'</td>'+
+      '<td>'+r.medicine+'</td>'+
+      '<td>'+r.navigation+'</td>'+
+      '<td>'+r.respect+'</td>'+
+      '<td>'+r.priority+'</td>'+
+      '<td>'+r.trust+'</td>'+
+      '<td>+'+r.points+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="11" class="muted-small">No responses match these filters.</td></tr>';
+}
+
+/* =========================================================
+   EXPORTS
+   ========================================================= */
+function buildInsightSummaryText(){
+  const ins = computeInsights();
+  return 'Patient Experience Pulse\n'+
+    'Total responses: '+ins.total+'\n'+
+    'Top issue: '+ins.topPriority+'\n'+
+    'Key finding: '+ins.longWaitPct+'% of patients report long waits, '+ins.medClarityPct+'% need clearer medicine instructions\n'+
+    'Recommended action: '+recoFor(ins.activeSurvey.category, ins.topPriority==='—'?'Registration queue':ins.topPriority);
+}
+
+function downloadBlob(content, filename, type){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+}
+
+function csvEscape(v){
+  const s = String(v ?? '');
+  if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function responsesToCSV(){
+  const headers = ['Time','Profile','Survey','Location','Waiting','Medicine','Navigation','Respect','Priority','Trust','Points'];
+  const rows = responses.map(r=>[
+    fmtDate(r.time), getProfile(r.profileId).name, getSurvey(r.surveyId).title, r.location,
+    r.waiting, r.medicine, r.navigation, r.respect, r.priority, r.trust, r.points
+  ]);
+  return [headers, ...rows].map(row=>row.map(csvEscape).join(',')).join('\n');
+}
+function tableToHTML(title, headers, rows){
+  let html = '<h3>'+title+'</h3><table border="1"><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr>';
+  rows.forEach(r=>{ html += '<tr>'+r.map(c=>'<td>'+(c===undefined?'':c)+'</td>').join('')+'</tr>'; });
+  html += '</table><br/>';
+  return html;
+}
+function buildExcelDocument(){
+  const ins = computeInsights();
+  const respRows = responses.map(r=>[
+    fmtDate(r.time), getProfile(r.profileId).name, getSurvey(r.surveyId).title, r.location,
+    r.waiting, r.medicine, r.navigation, r.respect, r.priority, r.trust, r.points
+  ]);
+  const respHeaders = ['Time','Profile','Survey','Location','Waiting','Medicine','Navigation','Respect','Priority','Trust','Points'];
+
+  const surveyRows = surveys.map(s=>[s.title, s.owner, s.category, s.time, s.points, s.targetGroup, s.status]);
+  const surveyHeaders = ['Title','Owner','Category','Estimated Time','Reward Points','Target Group','Status'];
+
+  const profileRows = profiles.map(p=>[p.name, p.type, p.organization, p.location, p.useCase, p.status]);
+  const profileHeaders = ['Name','Type','Organization','Location','Use Case','Status'];
+
+  const summaryRows = [
+    ['Total responses', ins.total],
+    ['Reward points distributed', ins.rewardTotal],
+    ['Average trust score', ins.avgTrust],
+    ['Top issue', ins.topPriority],
+    ['Recommended action', recoFor(ins.activeSurvey.category, ins.topPriority==='—'?'Registration queue':ins.topPriority)]
+  ];
+  const summaryHeaders = ['Metric','Value'];
+
+  let html = '<html><head><meta charset="UTF-8"></head><body>';
+  html += tableToHTML('Responses', respHeaders, respRows);
+  html += tableToHTML('Surveys', surveyHeaders, surveyRows);
+  html += tableToHTML('Profiles', profileHeaders, profileRows);
+  html += tableToHTML('Insight Summary', summaryHeaders, summaryRows);
+  html += '</body></html>';
+  return html;
+}
+function buildJSONExport(){
+  return JSON.stringify({
+    surveys, profiles, responses, wallet, targeting, activeProfileId, activeSurveyId, settings
+  }, null, 2);
+}
+
+document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
+  downloadBlob(buildExcelDocument(), 'jina-export.xls', 'application/vnd.ms-excel');
+  showToast('Excel file downloaded');
+});
+document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
+  downloadBlob(buildJSONExport(), 'jina-data.json', 'application/json');
+  showToast('JSON exported');
+});
+document.getElementById('exportCsvBtn').addEventListener('click', ()=>{
+  downloadBlob(responsesToCSV(), 'jina-responses.csv', 'text/csv');
+  showToast('CSV exported');
+});
+document.getElementById('copySummaryBtn').addEventListener('click', ()=>{
+  const text = buildInsightSummaryText();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast('Insight summary copied'))
+      .catch(()=>fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+});
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); showToast('Insight summary copied'); }
+  catch(e){ showToast('Copy not supported on this device'); }
+  document.body.removeChild(ta);
+}
+
+/* =========================================================
+   CITIZEN APP
+   ========================================================= */
+let surveyState = null; // {survey, index, answers}
+
+function renderCitizen(){
+  const survey = getSurvey(activeSurveyId);
+  const citizen = getProfile('p1');
+
+  if(surveyState && surveyState.mode==='active'){
+    renderSurveyQuestion();
+    return;
+  }
+  if(surveyState && surveyState.mode==='success'){
+    renderSuccess();
+    return;
+  }
+
+  document.getElementById('citizenBody').innerHTML =
+    '<div class="wallet-pill">'+
+      '<div><div class="muted-small" style="color:rgba(255,255,255,.6);">Wallet</div>'+
+      '<div class="wv" id="walletDisplay">'+wallet+' Jina Points</div></div>'+
+      '<div style="text-align:right;"><div class="muted-small" style="color:rgba(255,255,255,.6);">Trust Score</div>'+
+      '<div style="font-weight:800;font-size:18px;">92</div></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="section-title">Citizen Profile</div>'+
+      '<div style="font-weight:700;font-size:16px;margin-bottom:4px;">'+citizen.location+'</div>'+
+      '<div class="muted-small" style="margin-bottom:10px;">Location</div>'+
+      '<div class="pmeta">'+
+        '<span class="badge badge-green">Verified</span>'+
+        '<span class="badge badge-gold">Helpful Voice</span>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="section-title">Available survey</div>'+
+      '<h3 style="font-size:17px;margin-bottom:4px;">'+survey.title+'</h3>'+
+      '<p style="margin-bottom:10px;">'+survey.description+'</p>'+
+      '<div class="pmeta" style="margin-bottom:14px;">'+
+        '<span class="badge badge-grey">'+survey.time+'</span>'+
+        '<span class="badge badge-gold">'+survey.points+' Jina Points</span>'+
+        '<span class="badge badge-green">Aggregated insights only</span>'+
+      '</div>'+
+      '<button class="btn btn-primary btn-block" id="startSurveyBtn">Start</button>'+
+    '</div>';
+
+  document.getElementById('startSurveyBtn').addEventListener('click', ()=>{
+    surveyState = { mode:'active', survey: survey, index:0, answers:[] };
+    renderCitizen();
+  });
+}
+
+function renderSurveyQuestion(){
+  const {survey, index} = surveyState;
+  const q = survey.questions[index];
+  const total = survey.questions.length;
+
+  let progressHtml = '<div class="qprogress">';
+  for(let i=0;i<total;i++){
+    progressHtml += '<span class="'+(i<index?'done':(i===index?'done':''))+'"></span>';
+  }
+  progressHtml += '</div>';
+
+  let optsHtml = q.options.map((opt,i)=>
+    '<button class="opt-btn" data-opt="'+i+'" role="radio" aria-checked="false">'+opt+'</button>'
+  ).join('');
+
+  document.getElementById('citizenBody').innerHTML =
+    '<div class="card">'+
+      '<div class="muted-small" style="margin-bottom:8px;">Question '+(index+1)+' of '+total+'</div>'+
+      progressHtml+
+      '<h3 style="margin:14px 0 16px;font-size:18px;">'+q.text+'</h3>'+
+      '<div role="radiogroup" aria-label="'+q.text+'">'+optsHtml+'</div>'+
+    '</div>'+
+    '<div class="btn-row">'+
+      (index>0 ? '<button class="btn btn-outline" id="backBtn">Back</button>' : '')+
+    '</div>';
+
+  document.querySelectorAll('#citizenBody .opt-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const optIndex = parseInt(btn.dataset.opt,10);
+      surveyState.answers[index] = q.options[optIndex];
+      if(index < total-1){
+        surveyState.index++;
+        renderCitizen();
+      } else {
+        submitSurvey();
+      }
+    });
+  });
+  const backBtn = document.getElementById('backBtn');
+  if(backBtn) backBtn.addEventListener('click', ()=>{ surveyState.index--; renderCitizen(); });
+}
+
+function submitSurvey(){
+  const {survey, answers} = surveyState;
+  const trust = 86 + Math.floor(Math.random()*13);
+  let waiting='-', medicine='-', navigation='-', respect='-';
+  if(survey.category === 'Healthcare'){
+    waiting = answers[0]; medicine = answers[1]; navigation = answers[2]; respect = answers[3];
+  }
+  const priority = answers[answers.length-1];
+
+  const response = {
+    time: new Date().toISOString(),
+    profileId: 'p1',
+    surveyId: survey.id,
+    location: getProfile('p1').location,
+    waiting, medicine, navigation, respect, priority,
+    trust, points: survey.points
+  };
+  responses.push(response);
+  wallet += survey.points;
+  save('responses'); save('wallet'); save('settings');
+
+  surveyState = { mode:'success', earned: survey.points };
+  renderCitizen();
+
+  // refresh institution if visible
+  renderInstitution();
+}
+
+function renderSuccess(){
+  document.getElementById('citizenBody').innerHTML =
+    '<div class="card success-state">'+
+      '<div class="pts" id="ptsCounter">+0</div>'+
+      '<h3>Thank you.</h3>'+
+      '<p>Your experience helps improve services.</p>'+
+      '<div class="btn-row" style="margin-top:18px;justify-content:center;">'+
+        '<button class="btn btn-outline" id="answerAgainBtn">Answer Again</button>'+
+        '<button class="btn btn-primary" id="viewWalletBtn">View Wallet</button>'+
+      '</div>'+
+    '</div>';
+
+  // count-up animation
+  const target = surveyState.earned;
+  const el = document.getElementById('ptsCounter');
+  let cur = 0;
+  const step = Math.max(1, Math.round(target/20));
+  const timer = setInterval(()=>{
+    cur += step;
+    if(cur>=target){ cur=target; clearInterval(timer); }
+    el.textContent = '+'+cur;
+  }, 30);
+
+  document.getElementById('answerAgainBtn').addEventListener('click', ()=>{
+    surveyState = null; renderCitizen();
+  });
+  document.getElementById('viewWalletBtn').addEventListener('click', ()=>{
+    surveyState = null; renderCitizen();
+  });
+}
+
+/* =========================================================
+   PROFILE MANAGER
+   ========================================================= */
+function renderProfiles(){
+  document.getElementById('profilesGrid').innerHTML = profiles.map(p=>{
+    const active = p.id === activeProfileId;
+    return '<div class="card profile-card'+(active?' active':'')+'" data-id="'+p.id+'">'+
+      '<div class="pmeta">'+
+        (active ? '<span class="badge badge-gold">Active</span>' : '<span class="badge badge-grey">'+p.status+'</span>')+
+        '<span class="badge badge-grey">'+p.type+'</span>'+
+      '</div>'+
+      '<h3>'+p.name+'</h3>'+
+      '<div class="org">'+p.organization+' · '+p.location+'</div>'+
+      '<div class="field"><label>Profile name</label><input type="text" class="pf-field" data-field="name" value="'+p.name+'"></div>'+
+      '<div class="field"><label>Organization</label><input type="text" class="pf-field" data-field="organization" value="'+p.organization+'"></div>'+
+      '<div class="field"><label>Location</label><input type="text" class="pf-field" data-field="location" value="'+p.location+'"></div>'+
+      '<div class="field"><label>Primary use case</label><textarea class="pf-field" data-field="useCase" rows="2">'+p.useCase+'</textarea></div>'+
+      '<div class="btn-row">'+
+        '<button class="btn btn-outline btn-sm save-profile-btn" data-id="'+p.id+'">Save</button>'+
+        (active ? '<span class="badge badge-green" style="align-self:center;">Currently active</span>' :
+          '<button class="btn btn-primary btn-sm activate-profile-btn" data-id="'+p.id+'">Set Active</button>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.save-profile-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const card = btn.closest('.profile-card');
+      const p = profiles.find(x=>x.id===btn.dataset.id);
+      card.querySelectorAll('.pf-field').forEach(f=>{ p[f.dataset.field] = f.value; });
+      save('profiles'); save('settings');
+      showToast('Profile updated');
+      renderProfiles(); renderInstitution(); renderSurveys();
+    });
+  });
+  document.querySelectorAll('.activate-profile-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeProfileId = btn.dataset.id;
+      save('activeProfile');
+      showToast('Active profile updated');
+      renderProfiles(); renderInstitution();
+    });
+  });
+}
+
+/* =========================================================
+   SURVEY BUILDER
+   ========================================================= */
+let editingSurveyId = null;
+
+function renderSurveys(){
+  document.getElementById('surveysGrid').innerHTML = surveys.map(s=>{
+    const active = s.id === activeSurveyId;
+    return '<div class="card survey-card'+(active?' active':'')+'" data-id="'+s.id+'">'+
+      '<div class="pmeta" style="margin-bottom:8px;">'+
+        '<span class="badge badge-grey">'+s.category+'</span>'+
+        (active ? '<span class="badge badge-gold">Active</span>' : '')+
+      '</div>'+
+      '<h3>'+s.title+'</h3>'+
+      '<p style="margin:6px 0 10px;">'+s.description+'</p>'+
+      '<div class="pmeta" style="margin-bottom:12px;">'+
+        '<span class="badge badge-grey">'+s.time+'</span>'+
+        '<span class="badge badge-gold">'+s.points+' pts</span>'+
+        '<span class="badge badge-grey">'+s.questions.length+' questions</span>'+
+      '</div>'+
+      '<div class="btn-row">'+
+        '<button class="btn btn-outline btn-sm edit-survey-btn" data-id="'+s.id+'">Edit</button>'+
+        '<button class="btn btn-outline btn-sm dup-survey-btn" data-id="'+s.id+'">Duplicate</button>'+
+        (active ? '' : '<button class="btn btn-primary btn-sm activate-survey-btn" data-id="'+s.id+'">Set Active</button>')+
+        '<button class="btn btn-danger btn-sm del-survey-btn" data-id="'+s.id+'">Delete</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.edit-survey-btn').forEach(b=>b.addEventListener('click', ()=>{
+    editingSurveyId = b.dataset.id; renderSurveyEditor();
+  }));
+  document.querySelectorAll('.activate-survey-btn').forEach(b=>b.addEventListener('click', ()=>{
+    activeSurveyId = b.dataset.id; save('activeSurvey');
+    showToast('Active survey updated');
+    renderSurveys(); renderInstitution(); renderCitizen();
+  }));
+  document.querySelectorAll('.dup-survey-btn').forEach(b=>b.addEventListener('click', ()=>{
+    const src = surveys.find(s=>s.id===b.dataset.id);
+    const copy = JSON.parse(JSON.stringify(src));
+    copy.id = 's' + Date.now();
+    copy.title = src.title + ' (Copy)';
+    copy.status = 'Draft';
+    surveys.push(copy);
+    save('surveys'); save('settings');
+    showToast('Survey duplicated');
+    renderSurveys();
+  }));
+  document.querySelectorAll('.del-survey-btn').forEach(b=>b.addEventListener('click', ()=>{
+    confirmModal('Delete survey?', 'This will permanently remove this survey from your workspace.', ()=>{
+      surveys = surveys.filter(s=>s.id!==b.dataset.id);
+      if(surveys.length===0) surveys = JSON.parse(JSON.stringify(DEFAULT_SURVEYS));
+      if(activeSurveyId === b.dataset.id) activeSurveyId = surveys[0].id;
+      if(editingSurveyId === b.dataset.id) editingSurveyId = null;
+      save('surveys'); save('activeSurvey'); save('settings');
+      showToast('Survey deleted');
+      renderSurveys();
+    });
+  }));
+
+  renderSurveyEditor();
+}
+
+document.getElementById('newSurveyBtn').addEventListener('click', ()=>{
+  const s = {
+    id:'s'+Date.now(), title:'New Survey', owner: getProfile(activeProfileId).organization,
+    category:'Citizen Engagement', time:'2 minutes', points:20, description:'New feedback workflow',
+    targetGroup:'General respondents', status:'Draft',
+    questions:[ { id:'q'+Date.now(), text:'How would you rate this?', options:['Excellent','Good','Average','Poor'] } ]
+  };
+  surveys.push(s);
+  save('surveys'); save('settings');
+  editingSurveyId = s.id;
+  renderSurveys();
+  document.getElementById('surveyEditorWrap').scrollIntoView({behavior:'smooth'});
+});
+
+function renderSurveyEditor(){
+  const wrap = document.getElementById('surveyEditorWrap');
+  if(!editingSurveyId){ wrap.innerHTML=''; return; }
+  const s = surveys.find(x=>x.id===editingSurveyId);
+  if(!s){ wrap.innerHTML=''; editingSurveyId=null; return; }
+
+  let qHtml = s.questions.map((q,qi)=>
+    '<div class="q-block" data-qi="'+qi+'">'+
+      '<div class="field"><label>Question text</label><input type="text" class="qtext" value="'+q.text.replace(/"/g,'&quot;')+'"></div>'+
+      '<label>Options</label>'+
+      q.options.map((o,oi)=>
+        '<div class="opt-edit" data-oi="'+oi+'">'+
+          '<input type="text" class="opttext" value="'+o.replace(/"/g,'&quot;')+'">'+
+          '<button class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button>'+
+        '</div>'
+      ).join('')+
+      '<div class="btn-row">'+
+        '<button class="btn btn-outline btn-sm add-opt-btn">Add option</button>'+
+        '<button class="btn btn-outline btn-sm remove-q-btn">Remove question</button>'+
+      '</div>'+
+    '</div>'
+  ).join('');
+
+  wrap.innerHTML =
+    '<div class="card" id="surveyEditorCard">'+
+      '<div class="section-title">Survey details</div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Survey title</label><input type="text" id="ed_title" value="'+s.title.replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="field"><label>Survey owner</label><input type="text" id="ed_owner" value="'+s.owner.replace(/"/g,'&quot;')+'"></div>'+
+      '</div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Category</label>'+
+          '<select id="ed_category">'+
+            ['Healthcare','Company','Government Office','Citizen Engagement'].map(c=>'<option value="'+c+'"'+(c===s.category?' selected':'')+'>'+c+'</option>').join('')+
+          '</select></div>'+
+        '<div class="field"><label>Estimated time</label><input type="text" id="ed_time" value="'+s.time+'"></div>'+
+        '<div class="field"><label>Reward points</label><input type="number" id="ed_points" value="'+s.points+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>Description</label><input type="text" id="ed_description" value="'+s.description.replace(/"/g,'&quot;')+'"></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Target group</label><input type="text" id="ed_target" value="'+s.targetGroup.replace(/"/g,'&quot;')+'"></div>'+
+        '<div class="field"><label>Status</label>'+
+          '<select id="ed_status">'+
+            ['Active','Draft','Paused'].map(c=>'<option value="'+c+'"'+(c===s.status?' selected':'')+'>'+c+'</option>').join('')+
+          '</select></div>'+
+      '</div>'+
+      '<hr class="div">'+
+      '<div class="section-title">Questions</div>'+
+      '<div id="questionsList">'+qHtml+'</div>'+
+      '<button class="btn btn-outline btn-sm" id="addQuestionBtn">Add question</button>'+
+      '<hr class="div">'+
+      '<div class="btn-row">'+
+        '<button class="btn btn-primary" id="saveSurveyBtn">Save Survey</button>'+
+        '<button class="btn btn-outline" id="closeEditorBtn">Close</button>'+
+      '</div>'+
+    '</div>';
+
+  // option add/remove
+  wrap.querySelectorAll('.add-opt-btn').forEach(btn=>btn.addEventListener('click', e=>{
+    const block = e.target.closest('.q-block');
+    const div = document.createElement('div');
+    div.className='opt-edit';
+    div.innerHTML = '<input type="text" class="opttext" value="New option"><button class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button>';
+    block.querySelector('.add-opt-btn').closest('.btn-row').before(div);
+    div.querySelector('.remove-opt-btn').addEventListener('click', ()=>div.remove());
+  }));
+  wrap.querySelectorAll('.remove-opt-btn').forEach(btn=>btn.addEventListener('click', e=>{
+    e.target.closest('.opt-edit').remove();
+  }));
+  wrap.querySelectorAll('.remove-q-btn').forEach(btn=>btn.addEventListener('click', e=>{
+    e.target.closest('.q-block').remove();
+  }));
+  document.getElementById('addQuestionBtn').addEventListener('click', ()=>{
+    const div = document.createElement('div');
+    div.className='q-block';
+    div.innerHTML =
+      '<div class="field"><label>Question text</label><input type="text" class="qtext" value="New question"></div>'+
+      '<label>Options</label>'+
+      '<div class="opt-edit"><input type="text" class="opttext" value="Option 1"><button class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button></div>'+
+      '<div class="opt-edit"><input type="text" class="opttext" value="Option 2"><button class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button></div>'+
+      '<div class="btn-row">'+
+        '<button class="btn btn-outline btn-sm add-opt-btn">Add option</button>'+
+        '<button class="btn btn-outline btn-sm remove-q-btn">Remove question</button>'+
+      '</div>';
+    document.getElementById('questionsList').appendChild(div);
+    div.querySelectorAll('.remove-opt-btn').forEach(b=>b.addEventListener('click', ()=>b.closest('.opt-edit').remove()));
+    div.querySelector('.add-opt-btn').addEventListener('click', e=>{
+      const opt = document.createElement('div');
+      opt.className='opt-edit';
+      opt.innerHTML='<input type="text" class="opttext" value="New option"><button class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button>';
+      e.target.closest('.btn-row').before(opt);
+      opt.querySelector('.remove-opt-btn').addEventListener('click', ()=>opt.remove());
+    });
+    div.querySelector('.remove-q-btn').addEventListener('click', ()=>div.remove());
+  });
+
+  document.getElementById('closeEditorBtn').addEventListener('click', ()=>{ editingSurveyId=null; renderSurveyEditor(); });
+
+  document.getElementById('saveSurveyBtn').addEventListener('click', ()=>{
+    s.title = document.getElementById('ed_title').value.trim() || s.title;
+    s.owner = document.getElementById('ed_owner').value.trim() || s.owner;
+    s.category = document.getElementById('ed_category').value;
+    s.time = document.getElementById('ed_time').value.trim() || s.time;
+    s.points = parseInt(document.getElementById('ed_points').value,10) || s.points;
+    s.description = document.getElementById('ed_description').value.trim() || s.description;
+    s.targetGroup = document.getElementById('ed_target').value.trim() || s.targetGroup;
+    s.status = document.getElementById('ed_status').value;
+
+    const newQuestions = [];
+    document.querySelectorAll('#questionsList .q-block').forEach((qb,qi)=>{
+      const text = qb.querySelector('.qtext').value.trim() || ('Question '+(qi+1));
+      const opts = [...qb.querySelectorAll('.opttext')].map(i=>i.value.trim()).filter(Boolean);
+      if(opts.length>=2) newQuestions.push({ id:'q'+qi+'_'+Date.now(), text, options: opts });
+    });
+    if(newQuestions.length) s.questions = newQuestions;
+
+    save('surveys'); save('settings');
+    showToast('Survey saved');
+    renderSurveys();
+    renderCitizen();
+  });
+}
+
+/* =========================================================
+   SYSTEM MANAGER
+   ========================================================= */
+function renderSystem(){
+  document.getElementById('systemCards').innerHTML =
+    '<div class="card metric"><div class="label">Stored surveys</div><div class="value">'+surveys.length+'</div></div>'+
+    '<div class="card metric"><div class="label">Stored profiles</div><div class="value">'+profiles.length+'</div></div>'+
+    '<div class="card metric"><div class="label">Stored responses</div><div class="value">'+responses.length+'</div></div>'+
+    '<div class="card metric"><div class="label">Wallet points</div><div class="value">'+wallet+'</div></div>'+
+    '<div class="card metric"><div class="label">Last updated</div><div class="value" style="font-size:16px;">'+fmtDate(settings.lastUpdated)+'</div></div>';
+}
+
+document.getElementById('loadRecordsBtn').addEventListener('click', ()=>{
+  const fresh = generateSeedResponses();
+  responses = responses.concat(fresh);
+  save('responses'); save('settings');
+  showToast('Records loaded');
+  renderSystem(); renderInstitution();
+});
+
+document.getElementById('sysDownloadJsonBtn').addEventListener('click', ()=>{
+  downloadBlob(buildJSONExport(), 'jina-data.json', 'application/json');
+  showToast('JSON downloaded');
+});
+document.getElementById('sysDownloadExcelBtn').addEventListener('click', ()=>{
+  downloadBlob(buildExcelDocument(), 'jina-export.xls', 'application/vnd.ms-excel');
+  showToast('Excel downloaded');
+});
+document.getElementById('resetWalletBtn').addEventListener('click', ()=>{
+  confirmModal('Reset wallet?', 'This will set your Jina Points balance to 0. This cannot be undone.', ()=>{
+    wallet = 0; save('wallet'); save('settings');
+    showToast('Wallet reset');
+    renderSystem(); renderCitizen();
+  });
+});
+document.getElementById('clearDataBtn').addEventListener('click', ()=>{
+  confirmModal('Clear all data?', 'This removes all Jina data stored in this browser, including responses, profiles and surveys. This cannot be undone.', ()=>{
+    ['jina_surveys','jina_responses','jina_wallet','jina_targeting','jina_settings','jina_profiles','jina_active_profile','jina_active_survey'].forEach(k=>localStorage.removeItem(k));
+    loadState();
+    showToast('Data cleared');
+    renderInstitution(); renderCitizen(); renderProfiles(); renderSurveys(); renderSystem();
+  });
+});
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+function confirmModal(title, body, onConfirm){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML =
+    '<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">'+
+      '<div class="modal">'+
+        '<h3 id="modalTitle">'+title+'</h3>'+
+        '<p>'+body+'</p>'+
+        '<div class="btn-row">'+
+          '<button class="btn btn-danger" id="modalConfirm">Confirm</button>'+
+          '<button class="btn btn-outline" id="modalCancel">Cancel</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('modalConfirm').addEventListener('click', ()=>{ root.innerHTML=''; onConfirm(); });
+  document.getElementById('modalCancel').addEventListener('click', ()=>{ root.innerHTML=''; });
+  document.getElementById('modalConfirm').focus();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+loadState();
+setActivePage('institution');
+</script>
+</body>
+</html>
