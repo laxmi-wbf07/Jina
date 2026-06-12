@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jina | Rewarded citizen feedback</title>
+  <meta name="description" content="Jina helps institutions collect targeted, rewarded, trusted citizen feedback and turn it into decision-ready data." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --navy: #071A2C;
+      --navy-2: #0B243D;
+      --cream: #F8F4EA;
+      --white: #FFFFFF;
+      --red: #8B1E2D;
+      --gold: #F4B942;
+      --grey: #E7EAF0;
+      --soft: #F4F6F9;
+      --green: #2F855A;
+      --text: #111827;
+      --muted: #6B7280;
+      --line: rgba(7, 26, 44, 0.10);
+      --shadow: 0 24px 70px rgba(7, 26, 44, 0.11);
+      --shadow-soft: 0 12px 34px rgba(7, 26, 44, 0.08);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(244,185,66,.11), transparent 35rem),
+        radial-gradient(circle at top right, rgba(139,30,45,.09), transparent 40rem),
+        linear-gradient(180deg, #fbf8f0, var(--cream));
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    a { color: inherit; }
+
+    :focus-visible {
+      outline: 3px solid rgba(244,185,66,.9);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 14px;
+      background: var(--navy);
+      color: var(--white);
+      padding: 12px 16px;
+      border-radius: 999px;
+      z-index: 999;
+    }
+    .skip-link:focus { left: 14px; }
+
+    .app-shell {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 16px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 16px 0 28px;
+      padding: 14px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.76);
+      border: 1px solid rgba(255,255,255,.78);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 40px rgba(7,26,44,.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy);
+      font-weight: 900;
+      letter-spacing: -.05em;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      background: radial-gradient(circle at 35% 28%, rgba(244,185,66,.9), transparent 28%), linear-gradient(135deg, var(--red), var(--navy));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.26);
+    }
+    .brand-mark svg { width: 20px; height: 20px; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .nav button {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 760;
+      transition: all 240ms var(--ease);
+    }
+    .nav button:hover,
+    .nav button.active {
+      background: var(--navy);
+      color: var(--white);
+    }
+
+    main { min-height: calc(100vh - 180px); }
+    .view { display: none; animation: viewIn 420ms var(--ease) both; }
+    .view.active { display: block; }
+    .section-pad { padding: 18px 0 64px; }
+
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid { display: grid; gap: 20px; }
+
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(360px, .78fr);
+      align-items: center;
+      min-height: 680px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(139,30,45,.08);
+      color: var(--red);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: .01em;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--gold);
+      box-shadow: 0 0 0 6px rgba(244,185,66,.16);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .hero-title {
+      font-size: clamp(58px, 8vw, 126px);
+      line-height: .88;
+      letter-spacing: -.08em;
+      color: var(--navy);
+      margin: 24px 0 18px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(30px, 4.4vw, 74px);
+      line-height: .98;
+      letter-spacing: -.06em;
+      color: var(--navy);
+      max-width: 850px;
+      margin: 0 0 22px;
+    }
+    .hero-subtitle span { display: block; }
+
+    .hero-kicker {
+      font-size: clamp(18px, 2vw, 26px);
+      color: var(--muted);
+      max-width: 680px;
+      line-height: 1.45;
+      margin-bottom: 34px;
+    }
+
+    .actions, .export-actions, .system-actions, .inline-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 820;
+      transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), background 220ms var(--ease), opacity 220ms var(--ease);
+      white-space: nowrap;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--navy); color: var(--white); box-shadow: 0 14px 30px rgba(7,26,44,.18); }
+    .btn-primary:hover { background: #0A2238; }
+    .btn-soft { background: rgba(255,255,255,.78); color: var(--navy); border: 1px solid rgba(7,26,44,.08); box-shadow: 0 12px 24px rgba(7,26,44,.06); }
+    .btn-gold { background: var(--gold); color: var(--navy); box-shadow: 0 14px 30px rgba(244,185,66,.24); }
+    .btn-danger { background: rgba(139,30,45,.10); color: var(--red); border: 1px solid rgba(139,30,45,.16); }
+    .btn-green { background: rgba(47,133,90,.12); color: var(--green); border: 1px solid rgba(47,133,90,.18); }
+    .btn-small { min-height: 38px; padding: 9px 12px; font-size: 13px; }
+    .btn:disabled { opacity: .52; cursor: not-allowed; transform: none; }
+
+    .icon { width: 18px; height: 18px; display: inline-block; }
+
+    .glass-card, .loop-card, .evidence-card, .metric-card, .panel, .target-card, .insight-card, .system-card, .profile-card-ui {
+      background: rgba(255,255,255,.80);
+      border: 1px solid rgba(255,255,255,.74);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      transition: transform 260ms var(--ease), box-shadow 260ms var(--ease), border-color 260ms var(--ease);
+    }
+    .glass-card:hover, .loop-card:hover, .evidence-card:hover, .metric-card:hover, .panel:hover, .target-card:hover, .insight-card:hover, .system-card:hover, .profile-card-ui:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: rgba(244,185,66,.32);
+    }
+
+    .network-card {
+      position: relative;
+      min-height: 560px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(7,26,44,.97), rgba(10,38,64,.92));
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+    .network-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(244,185,66,.18), transparent 22%), radial-gradient(circle at 80% 70%, rgba(139,30,45,.26), transparent 26%);
+      pointer-events: none;
+    }
+    .network-card svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; }
+    .network-copy { position: absolute; left: 28px; right: 28px; bottom: 28px; z-index: 3; display: grid; gap: 14px; }
+    .power-card { padding: 22px; border-radius: 24px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: var(--white); backdrop-filter: blur(12px); }
+    .power-card strong { display: block; font-size: 26px; letter-spacing: -.04em; margin-bottom: 8px; }
+    .power-card span { color: rgba(255,255,255,.72); line-height: 1.5; }
+    .node { filter: drop-shadow(0 0 14px rgba(244,185,66,.4)); }
+    .pulse-line { stroke-dasharray: 12 18; animation: pulseLine 7s linear infinite; }
+    @keyframes pulseLine { to { stroke-dashoffset: -180; } }
+
+    .core-loop { margin-top: 26px; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; }
+    .loop-card { padding: 18px; min-height: 132px; position: relative; overflow: hidden; }
+    .loop-card::before { content: ""; position: absolute; top: 18px; right: 18px; width: 12px; height: 12px; border-radius: 999px; background: var(--gold); box-shadow: 0 0 0 8px rgba(244,185,66,.12); }
+    .loop-card b { display: block; color: var(--navy); font-size: 18px; letter-spacing: -.02em; margin-bottom: 38px; }
+    .loop-card span { color: var(--muted); font-weight: 700; }
+
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .section-heading h2 { font-size: clamp(36px, 5vw, 68px); line-height: .96; letter-spacing: -.07em; margin-bottom: 0; color: var(--navy); }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 18px; max-width: 540px; line-height: 1.45; }
+
+    .evidence-grid { margin-top: 22px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .evidence-card { padding: 24px; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; }
+    .evidence-value { font-size: clamp(34px, 4vw, 58px); line-height: 1; letter-spacing: -.07em; color: var(--navy); font-weight: 900; }
+    .evidence-card b { color: var(--navy); font-size: 18px; letter-spacing: -.03em; }
+    .evidence-card span { color: var(--muted); font-weight: 700; }
+
+    .bottom-line { margin-top: 22px; padding: 24px; border-radius: var(--radius-lg); background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: space-between; gap: 20px; box-shadow: var(--shadow); }
+    .bottom-line strong { font-size: clamp(26px, 4vw, 54px); letter-spacing: -.06em; line-height: .95; }
+    .bottom-line span { color: rgba(255,255,255,.72); font-weight: 800; text-align: right; }
+
+    .institution-shell { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 20px; align-items: start; }
+    .side-panel { position: sticky; top: 104px; padding: 22px; border-radius: var(--radius-xl); background: var(--navy); color: var(--white); box-shadow: var(--shadow); overflow: hidden; }
+    .side-panel::after { content: ""; position: absolute; right: -90px; top: -90px; width: 220px; height: 220px; border-radius: 50%; background: rgba(244,185,66,.18); pointer-events: none; }
+    .side-panel h2 { font-size: 32px; letter-spacing: -.06em; line-height: .95; margin: 12px 0 10px; position: relative; z-index: 2; }
+    .side-panel p { color: rgba(255,255,255,.70); line-height: 1.5; margin-bottom: 18px; position: relative; z-index: 2; }
+    .side-panel .eyebrow { background: rgba(255,255,255,.08); color: var(--cream); position: relative; z-index: 2; }
+    .trust-stack { display: grid; gap: 10px; margin-top: 18px; position: relative; z-index: 2; }
+    .trust-badge { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; color: rgba(255,255,255,.82); font-weight: 760; }
+    .trust-badge strong { color: var(--white); text-align: right; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tabs button { padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,.74); color: var(--muted); border: 1px solid rgba(7,26,44,.08); font-weight: 800; transition: all 220ms var(--ease); }
+    .tabs button:hover, .tabs button.active { color: var(--white); background: var(--navy); }
+    .tab-view { display: none; animation: viewIn 320ms var(--ease) both; }
+    .tab-view.active { display: block; }
+
+    .dashboard-grid { grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 14px; }
+    .metric-card { padding: 18px; min-height: 140px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric-label { color: var(--muted); font-weight: 900; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+    .metric-value { font-size: clamp(28px,3vw,46px); line-height: 1; letter-spacing: -.07em; color: var(--navy); font-weight: 900; }
+    .metric-sub { color: var(--muted); font-size: 13px; font-weight: 700; line-height: 1.35; }
+
+    .panel { padding: 22px; }
+    .panel h3 { margin: 0 0 12px; font-size: 24px; letter-spacing: -.05em; color: var(--navy); }
+    .panel-sub { color: var(--muted); font-weight: 680; line-height: 1.45; margin: -4px 0 16px; }
+
+    .dashboard-row { grid-template-columns: minmax(0,1.2fr) minmax(320px,.8fr); margin-top: 16px; }
+    .flow-line { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; position: relative; margin-top: 18px; }
+    .flow-step { position: relative; z-index: 2; background: var(--soft); border: 1px solid rgba(7,26,44,.06); color: var(--navy); border-radius: 18px; padding: 16px 12px; text-align: center; font-weight: 900; letter-spacing: -.03em; overflow: hidden; }
+    .flow-step::after { content: ""; position: absolute; inset: auto 0 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--red), var(--green)); transform: translateX(-100%); animation: stepPulse 4.2s var(--ease) infinite; }
+    .flow-step:nth-child(2)::after { animation-delay: .4s; }
+    .flow-step:nth-child(3)::after { animation-delay: .8s; }
+    .flow-step:nth-child(4)::after { animation-delay: 1.2s; }
+    .flow-step:nth-child(5)::after { animation-delay: 1.6s; }
+    @keyframes stepPulse { 0%,25% { transform: translateX(-100%); opacity: 0; } 45%,70% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+
+    .recommend-card { min-height: 260px; background: linear-gradient(145deg, rgba(7,26,44,.96), rgba(9,43,73,.92)); color: var(--white); border: 1px solid rgba(255,255,255,.16); position: relative; overflow: hidden; }
+    .recommend-card::before { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 999px; right: -84px; bottom: -95px; background: rgba(244,185,66,.22); }
+    .recommend-card h3, .recommend-card strong, .recommend-card span { position: relative; z-index: 2; }
+    .recommend-card h3 { color: var(--white); font-size: 20px; margin-bottom: 26px; }
+    .recommend-card strong { display: block; font-size: clamp(32px,4vw,58px); letter-spacing: -.07em; line-height: .92; }
+    .recommend-card span { display: block; margin-top: 14px; color: rgba(255,255,255,.70); font-weight: 700; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .field { display: grid; gap: 8px; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: var(--navy); font-size: 13px; font-weight: 900; letter-spacing: .02em; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid rgba(7,26,44,.12);
+      background: rgba(255,255,255,.78);
+      border-radius: 16px;
+      padding: 13px 14px;
+      color: var(--navy);
+      outline: 0;
+      transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease), background 200ms var(--ease);
+    }
+    textarea { min-height: 116px; resize: vertical; line-height: 1.5; }
+    input:focus, textarea:focus, select:focus { border-color: rgba(244,185,66,.8); box-shadow: 0 0 0 4px rgba(244,185,66,.14); background: var(--white); }
+
+    .template-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 18px; }
+    .question-list { display: grid; gap: 12px; margin-top: 10px; }
+    .question-editor { display: grid; grid-template-columns: 44px minmax(0,1fr) minmax(0,1fr) auto; gap: 12px; align-items: start; background: rgba(7,26,44,.035); border: 1px solid rgba(7,26,44,.06); border-radius: 20px; padding: 12px; }
+    .question-number { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; color: var(--navy); background: rgba(244,185,66,.18); font-weight: 900; }
+
+    .profile-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .profile-card-ui { padding: 18px; cursor: pointer; min-height: 230px; display: flex; flex-direction: column; justify-content: space-between; }
+    .profile-card-ui.active { border-color: rgba(244,185,66,.75); box-shadow: 0 0 0 4px rgba(244,185,66,.14), var(--shadow-soft); }
+    .profile-icon { width: 48px; height: 48px; border-radius: 17px; display: grid; place-items: center; background: var(--navy); color: var(--white); font-weight: 900; letter-spacing: -.04em; margin-bottom: 14px; }
+    .profile-card-ui h3 { font-size: 22px; margin: 0 0 8px; letter-spacing: -.05em; color: var(--navy); }
+    .profile-card-ui p { color: var(--muted); font-weight: 680; line-height: 1.4; margin-bottom: 14px; }
+
+    .target-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .target-card { padding: 18px; }
+    .target-card span { display: block; color: var(--muted); font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+    .target-card b { color: var(--navy); font-size: 24px; letter-spacing: -.05em; }
+
+    .insight-grid { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .insight-card { padding: 18px; min-height: 190px; }
+    .insight-card.wide { grid-column: span 2; }
+    .insight-card h3 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .big-percent { color: var(--navy); font-size: 50px; line-height: 1; letter-spacing: -.07em; font-weight: 900; margin-bottom: 14px; }
+    .progress-track { width: 100%; height: 11px; background: rgba(7,26,44,.08); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--red), var(--gold)); transition: width 900ms var(--ease); }
+    .progress-fill.green { background: linear-gradient(90deg, var(--green), var(--gold)); }
+    .donut-wrap { display: flex; align-items: center; gap: 18px; }
+    .donut { --value: 0; width: 104px; height: 104px; border-radius: 50%; background: conic-gradient(var(--green) calc(var(--value) * 1%), rgba(7,26,44,.08) 0); display: grid; place-items: center; flex: 0 0 auto; position: relative; }
+    .donut::after { content: ""; width: 70px; height: 70px; border-radius: 50%; background: var(--white); box-shadow: inset 0 0 0 1px rgba(7,26,44,.05); }
+    .donut-label { position: absolute; color: var(--navy); font-weight: 900; letter-spacing: -.05em; z-index: 2; }
+    .bar-list { display: grid; gap: 10px; margin-top: 12px; }
+    .bar-row { display: grid; grid-template-columns: 130px minmax(0,1fr) 44px; gap: 10px; align-items: center; color: var(--muted); font-weight: 760; font-size: 13px; }
+    .mini-track { height: 10px; border-radius: 999px; background: rgba(7,26,44,.07); overflow: hidden; }
+    .mini-fill { height: 100%; width: 0; border-radius: 999px; background: var(--navy); transition: width 900ms var(--ease); }
+    .trend-grid { grid-template-columns: repeat(3, minmax(0,1fr)); margin-top: 14px; }
+    .trend-card { background: rgba(7,26,44,.04); border: 1px solid rgba(7,26,44,.06); border-radius: 18px; padding: 14px; }
+    .trend-card b { display: block; color: var(--navy); font-size: 22px; letter-spacing: -.04em; margin-bottom: 4px; }
+    .trend-card span { color: var(--muted); font-size: 13px; font-weight: 700; }
+
+    .table-tools { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    .table-tools .field { min-width: 210px; }
+    .table-wrap { overflow-x: auto; border-radius: 22px; border: 1px solid rgba(7,26,44,.08); background: rgba(255,255,255,.70); }
+    table { width: 100%; min-width: 1120px; border-collapse: collapse; }
+    th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid rgba(7,26,44,.07); white-space: nowrap; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 900; background: rgba(248,244,234,.76); }
+    td { color: var(--navy); font-size: 14px; font-weight: 680; }
+    tr:last-child td { border-bottom: 0; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; background: rgba(7,26,44,.06); color: var(--navy); font-weight: 850; font-size: 12px; }
+    .pill.green { background: rgba(47,133,90,.12); color: var(--green); }
+    .pill.gold { background: rgba(244,185,66,.18); color: #78570C; }
+    .pill.red { background: rgba(139,30,45,.10); color: var(--red); }
+
+    .summary-box { white-space: pre-wrap; color: var(--navy); background: rgba(255,255,255,.80); border: 1px solid rgba(7,26,44,.10); border-radius: 18px; padding: 16px; min-height: 170px; line-height: 1.55; font-weight: 700; }
+
+    .citizen-grid { grid-template-columns: minmax(0,.95fr) minmax(360px,480px); align-items: center; gap: 28px; min-height: 680px; }
+    .citizen-copy h2 { font-size: clamp(42px,6vw,86px); letter-spacing: -.08em; line-height: .94; color: var(--navy); margin: 16px 0; }
+    .citizen-copy p { color: var(--muted); font-size: 20px; line-height: 1.45; max-width: 620px; }
+    .citizen-proof { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 22px; max-width: 720px; }
+    .citizen-proof div { background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.72); box-shadow: var(--shadow-soft); border-radius: 22px; padding: 18px; }
+    .citizen-proof b { display: block; color: var(--navy); font-size: 25px; letter-spacing: -.05em; margin-bottom: 4px; }
+    .citizen-proof span { color: var(--muted); font-weight: 700; font-size: 13px; }
+
+    .phone { width: min(100%, 420px); min-height: 760px; border-radius: 48px; padding: 14px; margin: 0 auto; background: linear-gradient(145deg, #071A2C, #102D49); box-shadow: 0 34px 90px rgba(7,26,44,.22); border: 1px solid rgba(255,255,255,.16); }
+    .phone-screen { min-height: 732px; border-radius: 38px; background: radial-gradient(circle at top right, rgba(244,185,66,.20), transparent 24rem), var(--cream); overflow: hidden; border: 1px solid rgba(255,255,255,.16); position: relative; }
+    .phone-top { height: 74px; padding: 20px 20px 14px; display: flex; align-items: center; justify-content: space-between; color: var(--navy); }
+    .phone-top b { font-size: 21px; letter-spacing: -.05em; }
+    .phone-signal { display: flex; gap: 4px; align-items: end; }
+    .phone-signal span { width: 5px; border-radius: 999px; background: var(--navy); opacity: .78; }
+    .phone-signal span:nth-child(1) { height: 8px; }
+    .phone-signal span:nth-child(2) { height: 12px; }
+    .phone-signal span:nth-child(3) { height: 16px; }
+    .phone-body { padding: 8px 18px 22px; animation: viewIn 300ms var(--ease) both; }
+    .profile-card, .survey-card, .wallet-card, .success-card { border-radius: 28px; background: rgba(255,255,255,.82); border: 1px solid rgba(255,255,255,.78); box-shadow: 0 14px 32px rgba(7,26,44,.08); padding: 18px; margin-bottom: 14px; }
+    .profile-row { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+    .avatar { width: 54px; height: 54px; border-radius: 19px; display: grid; place-items: center; background: var(--navy); color: var(--white); font-weight: 900; letter-spacing: -.05em; }
+    .profile-card h3, .survey-card h3, .wallet-card h3, .success-card h3 { margin: 0; color: var(--navy); letter-spacing: -.05em; font-size: 22px; }
+    .profile-card p, .survey-card p, .wallet-card p, .success-card p { margin: 6px 0 0; color: var(--muted); font-weight: 700; line-height: 1.4; }
+    .phone-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+    .phone-stat { background: rgba(7,26,44,.05); border: 1px solid rgba(7,26,44,.06); border-radius: 18px; padding: 12px; }
+    .phone-stat span { color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    .phone-stat b { display: block; margin-top: 6px; color: var(--navy); font-size: 25px; letter-spacing: -.06em; }
+    .badges, .survey-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .survey-meta { margin: 14px 0 16px; }
+    .question-progress { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; color: var(--muted); font-weight: 850; font-size: 13px; }
+    .phone-progress { width: 120px; height: 8px; background: rgba(7,26,44,.08); border-radius: 999px; overflow: hidden; }
+    .phone-progress span { display: block; height: 100%; width: 0; background: var(--gold); border-radius: inherit; transition: width 500ms var(--ease); }
+    .question-title { color: var(--navy); font-size: 24px; line-height: 1.15; letter-spacing: -.05em; margin: 0 0 16px; }
+    .options { display: grid; gap: 10px; }
+    .option-btn { text-align: left; padding: 14px; border-radius: 18px; background: rgba(255,255,255,.78); color: var(--navy); border: 1px solid rgba(7,26,44,.08); font-weight: 780; transition: all 220ms var(--ease); }
+    .option-btn:hover, .option-btn.selected { background: rgba(244,185,66,.20); border-color: rgba(244,185,66,.65); box-shadow: 0 0 0 4px rgba(244,185,66,.12); }
+    .phone-action-row { display: flex; gap: 10px; margin-top: 16px; }
+    .phone-action-row .btn { flex: 1; padding-inline: 12px; }
+    .success-card { text-align: center; padding: 30px 18px; }
+    .success-points { color: var(--green); font-size: 56px; line-height: 1; letter-spacing: -.08em; font-weight: 900; margin-bottom: 14px; }
+    .checkmark { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; background: rgba(47,133,90,.13); color: var(--green); margin: 0 auto 16px; }
+
+    .system-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .system-card { padding: 20px; min-height: 150px; }
+    .system-card span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 900; }
+    .system-card b { display: block; margin-top: 16px; color: var(--navy); font-size: 38px; letter-spacing: -.07em; line-height: 1; }
+    .footer { color: var(--muted); text-align: center; padding: 34px 0 44px; font-weight: 700; font-size: 14px; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 200; display: none; place-items: center; padding: 20px; background: rgba(7,26,44,.48); backdrop-filter: blur(10px); }
+    .modal-backdrop.active { display: grid; animation: fadeIn 180ms var(--ease) both; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { width: min(460px, 100%); background: var(--white); border-radius: 28px; padding: 24px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.7); }
+    .modal h3 { margin: 0 0 8px; color: var(--navy); letter-spacing: -.05em; font-size: 26px; }
+    .modal p { color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 300; background: var(--navy); color: var(--white); padding: 13px 16px; border-radius: 999px; box-shadow: var(--shadow); transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 260ms var(--ease); font-weight: 780; }
+    .toast.active { transform: translateY(0); opacity: 1; }
+    .empty-state { color: var(--muted); text-align: center; padding: 28px; font-weight: 750; }
+
+    @media (max-width: 1120px) {
+      .hero-grid, .citizen-grid, .institution-shell, .dashboard-row { grid-template-columns: 1fr; }
+      .side-panel { position: relative; top: auto; }
+      .dashboard-grid, .core-loop, .evidence-grid, .insight-grid, .system-grid, .profile-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .dashboard-grid .metric-card:last-child { grid-column: 1 / -1; }
+      .network-card { min-height: 460px; }
+      .target-grid, .trend-grid { grid-template-columns: 1fr; }
+      .insight-card.wide { grid-column: auto; }
+      .question-editor { grid-template-columns: 44px minmax(0,1fr); }
+      .question-editor .remove-question { grid-column: 2; justify-self: start; }
+    }
+
+    @media (max-width: 720px) {
+      .app-shell { width: min(100% - 20px, 1480px); }
+      .topbar { align-items: flex-start; border-radius: 28px; flex-direction: column; top: 8px; }
+      .nav { width: 100%; justify-content: space-between; }
+      .nav button { flex: 1 1 auto; padding: 10px 9px; font-size: 13px; }
+      .hero-grid, .citizen-grid { min-height: auto; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+      .core-loop, .evidence-grid, .dashboard-grid, .form-grid, .insight-grid, .system-grid, .citizen-proof, .profile-grid { grid-template-columns: 1fr; }
+      .bottom-line { align-items: flex-start; flex-direction: column; }
+      .bottom-line span { text-align: left; }
+      .network-card { min-height: 420px; }
+      .flow-line { grid-template-columns: 1fr; }
+      .phone { min-height: auto; border-radius: 34px; padding: 10px; }
+      .phone-screen { min-height: 680px; border-radius: 27px; }
+      .table-tools { display: grid; grid-template-columns: 1fr; }
+      .table-tools .field { min-width: 0; }
+      .question-editor { grid-template-columns: 1fr; }
+      .question-number { width: 38px; height: 38px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="app-shell">
+    <header class="topbar" aria-label="Main navigation">
+      <div class="brand" aria-label="Jina home">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M7 12.4 10.2 16 17 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span>Jina</span>
+      </div>
+      <nav class="nav">
+        <button class="active" data-section="story" type="button">Story</button>
+        <button data-section="institution" type="button">Institution</button>
+        <button data-section="citizen" type="button">Citizen</button>
+        <button data-section="system" type="button">System</button>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="story" class="view active section-pad" aria-labelledby="story-title">
+        <div class="grid hero-grid">
+          <div>
+            <span class="eyebrow">Targeted rewarded citizen insight platform</span>
+            <h1 id="story-title" class="hero-title">Jina</h1>
+            <h2 class="hero-subtitle">
+              <span>Rewarded citizen feedback.</span>
+              <span>The right people.</span>
+              <span>The right questions.</span>
+              <span>Real insight.</span>
+            </h2>
+            <p class="hero-kicker">Jina helps institutions collect targeted, rewarded, trusted citizen feedback and turn it into decision-ready data.</p>
+            <div class="actions">
+              <button class="btn btn-primary" data-section="institution" type="button">Open Institution Console <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="btn btn-soft" data-section="citizen" type="button">Open Citizen App</button>
+            </div>
+            <div class="grid core-loop" aria-label="Jina core loop">
+              <div class="loop-card"><b>ASK</b><span>Institution asks</span></div>
+              <div class="loop-card"><b>TARGET</b><span>Right people</span></div>
+              <div class="loop-card"><b>ANSWER</b><span>Citizen responds</span></div>
+              <div class="loop-card"><b>REWARD</b><span>Points earned</span></div>
+              <div class="loop-card"><b>DECIDE</b><span>Dashboard learns</span></div>
+            </div>
+          </div>
+
+          <div class="network-card" aria-label="Abstract Bhutan map inspired feedback network">
+            <svg viewBox="0 0 620 720" role="img" aria-label="Connected citizen feedback nodes">
+              <defs>
+                <linearGradient id="lineGlow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4B942" stop-opacity=".95"/><stop offset="1" stop-color="#8B1E2D" stop-opacity=".95"/></linearGradient>
+                <filter id="softGlow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <path d="M120 250 C180 190,250 190,315 230 C372 266,424 245,487 292 C536 329,535 390,492 428 C445 470,395 457,338 505 C292 543,205 536,160 482 C110 423,74 315,120 250Z" fill="rgba(255,255,255,.035)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
+              <path class="pulse-line" d="M152 306 L246 258 L347 303 L454 342 L402 441 L290 472 L205 408 L152 306" fill="none" stroke="url(#lineGlow)" stroke-width="3" opacity=".7"/>
+              <path class="pulse-line" d="M246 258 L290 472 M347 303 L205 408 M454 342 L152 306" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2" opacity=".6"/>
+              <g class="node" filter="url(#softGlow)"><circle cx="152" cy="306" r="13" fill="#F4B942"/><circle cx="246" cy="258" r="10" fill="#FFFFFF"/><circle cx="347" cy="303" r="14" fill="#F4B942"/><circle cx="454" cy="342" r="11" fill="#FFFFFF"/><circle cx="402" cy="441" r="14" fill="#8B1E2D"/><circle cx="290" cy="472" r="10" fill="#FFFFFF"/><circle cx="205" cy="408" r="12" fill="#2F855A"/></g>
+            </svg>
+            <div class="network-copy">
+              <div class="power-card"><strong>A patient answers.</strong><span>A hospital learns.</span></div>
+              <div class="power-card"><strong>Not everyone answers everything.</strong><span>The right people answer the right questions.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <h2>Why now</h2>
+          <p>Clean signals matter when institutions need to act quickly, fairly, and with trust.</p>
+        </div>
+        <div class="grid evidence-grid">
+          <article class="evidence-card"><div class="evidence-value">57.97 / 100</div><div><b>Low data performance</b><br><span>Second lowest in SAARC</span></div></article>
+          <article class="evidence-card"><div class="evidence-value">SILOS</div><div><b>Data stuck</b><br><span>Decisions delayed</span></div></article>
+          <article class="evidence-card"><div class="evidence-value">9%</div><div><b>Ready processes</b><br><span>Structured workflows missing</span></div></article>
+        </div>
+        <div class="bottom-line"><strong>Not no data.<br>Not ready data.</strong><span>ASK → TARGET → ANSWER → REWARD → DECIDE</span></div>
+      </section>
+
+      <section id="institution" class="view section-pad" aria-labelledby="institution-title">
+        <div class="institution-shell">
+          <aside class="side-panel">
+            <span class="eyebrow">Institution Console</span>
+            <h2 id="institution-title">Patient Experience Pulse</h2>
+            <p id="sideSub">Collect decision-ready patient experience data.</p>
+            <div class="trust-stack">
+              <div class="trust-badge"><span>Active profile</span><strong id="sideProfile">Hospital</strong></div>
+              <div class="trust-badge"><span>Survey</span><strong id="sideSurvey">Pulse</strong></div>
+              <div class="trust-badge"><span>Reward</span><strong id="sideReward">40</strong></div>
+              <div class="trust-badge"><span>Signal</span><strong>Live</strong></div>
+            </div>
+          </aside>
+
+          <div>
+            <div class="tabs" role="tablist" aria-label="Institution dashboard tabs">
+              <button class="active" data-tab="overview" type="button" role="tab">Overview</button>
+              <button data-tab="survey" type="button" role="tab">Survey</button>
+              <button data-tab="profiles" type="button" role="tab">Profiles</button>
+              <button data-tab="targeting" type="button" role="tab">Targeting</button>
+              <button data-tab="insights" type="button" role="tab">Insights</button>
+              <button data-tab="responses" type="button" role="tab">Responses</button>
+              <button data-tab="export" type="button" role="tab">Export</button>
+            </div>
+
+            <div id="overviewTab" class="tab-view active" role="tabpanel">
+              <div class="grid dashboard-grid">
+                <article class="metric-card"><span class="metric-label">Total responses</span><strong class="metric-value" id="metricTotal">0</strong><span class="metric-sub">Voices captured for this survey</span></article>
+                <article class="metric-card"><span class="metric-label">Reward points distributed</span><strong class="metric-value" id="metricRewards">0</strong><span class="metric-sub">Participation value returned</span></article>
+                <article class="metric-card"><span class="metric-label">Trust score</span><strong class="metric-value" id="metricTrust">0</strong><span class="metric-sub">Average response confidence</span></article>
+                <article class="metric-card"><span class="metric-label">Top issue</span><strong class="metric-value" id="metricIssue">—</strong><span class="metric-sub">Most selected priority</span></article>
+                <article class="metric-card"><span class="metric-label">Completion progress</span><strong class="metric-value" id="metricProgress">0%</strong><span class="metric-sub">Toward target responses</span></article>
+              </div>
+              <div class="grid dashboard-row">
+                <article class="panel"><h3>Core flow</h3><div class="flow-line" aria-label="Ask target answer reward decide"><div class="flow-step">Ask</div><div class="flow-step">Target</div><div class="flow-step">Answer</div><div class="flow-step">Reward</div><div class="flow-step">Decide</div></div></article>
+                <article class="panel recommend-card"><h3>Recommended action</h3><strong id="overviewRecommendation">Fix registration queue first.</strong><span>A patient answers. A hospital learns.</span></article>
+              </div>
+            </div>
+
+            <div id="surveyTab" class="tab-view" role="tabpanel">
+              <article class="panel">
+                <h3>Survey Builder</h3>
+                <p class="panel-sub">Create and manage multiple rewarded surveys. The selected survey appears in the Citizen App.</p>
+                <div class="form-grid">
+                  <div class="field"><label for="surveySelect">Current survey</label><select id="surveySelect" aria-label="Choose survey"></select></div>
+                  <div class="field"><label for="surveyProfile">Owner profile</label><select id="surveyProfile" aria-label="Choose owner profile"></select></div>
+                </div>
+                <div class="template-row">
+                  <button class="btn btn-primary btn-small" data-action="newSurvey" type="button">New Survey</button>
+                  <button class="btn btn-soft btn-small" data-template="hospital" type="button">Hospital Template</button>
+                  <button class="btn btn-soft btn-small" data-template="company" type="button">Company Template</button>
+                  <button class="btn btn-soft btn-small" data-template="government" type="button">Government Template</button>
+                  <button class="btn btn-soft btn-small" data-template="personal" type="button">Personal Template</button>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field"><label for="surveyTitle">Survey title</label><input id="surveyTitle" type="text" /></div>
+                  <div class="field"><label for="surveyInstitution">Institution / owner</label><input id="surveyInstitution" type="text" /></div>
+                  <div class="field"><label for="surveyReward">Reward</label><input id="surveyReward" type="number" min="0" step="1" /></div>
+                  <div class="field"><label for="surveyUseCase">Use case</label><input id="surveyUseCase" type="text" /></div>
+                  <div class="field full"><label for="surveyDescription">Short description</label><textarea id="surveyDescription"></textarea></div>
+                  <div class="field full"><label>Questions and options</label><div id="questionList" class="question-list"></div></div>
+                </div>
+                <div class="export-actions" style="margin-top:16px;">
+                  <button class="btn btn-soft" data-action="addQuestion" type="button">Add Question</button>
+                  <button class="btn btn-primary" data-action="saveSurvey" type="button">Save Survey</button>
+                  <button class="btn btn-danger" data-action="deleteSurvey" type="button">Delete Survey</button>
+                </div>
+              </article>
+            </div>
+
+            <div id="profilesTab" class="tab-view" role="tabpanel">
+              <div class="grid profile-grid" id="profileCards"></div>
+              <article class="panel" style="margin-top:16px;">
+                <h3>Profile Editor</h3>
+                <p class="panel-sub">Switch between a personal voice, a company, a government office, and a hospital service team.</p>
+                <div class="form-grid">
+                  <div class="field"><label for="profileName">Profile name</label><input id="profileName" type="text" /></div>
+                  <div class="field"><label for="profileType">Profile type</label><input id="profileType" type="text" /></div>
+                  <div class="field"><label for="profileSector">Sector</label><input id="profileSector" type="text" /></div>
+                  <div class="field"><label for="profileLocation">Location</label><input id="profileLocation" type="text" /></div>
+                  <div class="field full"><label for="profileDescription">Description</label><textarea id="profileDescription"></textarea></div>
+                </div>
+                <div class="export-actions" style="margin-top:16px;"><button class="btn btn-primary" data-action="saveProfile" type="button">Save Profile</button></div>
+              </article>
+            </div>
+
+            <div id="targetingTab" class="tab-view" role="tabpanel">
+              <div class="grid target-grid" aria-label="Targeting settings summary">
+                <article class="target-card"><span>Target group</span><b id="targetGroupCard">OPD patients</b></article>
+                <article class="target-card"><span>Visit window</span><b id="visitWindowCard">Last 30 days</b></article>
+                <article class="target-card"><span>Target responses</span><b id="targetResponsesCard">300</b></article>
+              </div>
+              <article class="panel" style="margin-top:16px;">
+                <h3>Targeting</h3>
+                <div class="form-grid">
+                  <div class="field"><label for="targetGroup">Target group</label><input id="targetGroup" type="text" /></div>
+                  <div class="field"><label for="visitWindow">Visit window</label><input id="visitWindow" type="text" /></div>
+                  <div class="field"><label for="targetResponses">Target responses</label><input id="targetResponses" type="number" min="1" step="1" /></div>
+                  <div class="field"><label for="targetAge">Age</label><input id="targetAge" type="text" /></div>
+                  <div class="field full"><label for="targetLocations">Locations</label><input id="targetLocations" type="text" /></div>
+                </div>
+                <div class="export-actions" style="margin-top:16px;"><button class="btn btn-primary" data-action="saveTargeting" type="button">Save Targeting</button></div>
+              </article>
+            </div>
+
+            <div id="insightsTab" class="tab-view" role="tabpanel">
+              <div class="grid insight-grid">
+                <article class="insight-card"><h3 id="insightLabelOne">Waiting time</h3><div class="big-percent" id="signalOnePercent">0%</div><div class="progress-track"><div class="progress-fill" id="signalOneBar"></div></div></article>
+                <article class="insight-card"><h3 id="insightLabelTwo">Medicine clarity</h3><div class="big-percent" id="signalTwoPercent">0%</div><div class="progress-track"><div class="progress-fill" id="signalTwoBar"></div></div></article>
+                <article class="insight-card"><h3 id="insightLabelThree">Navigation</h3><div class="big-percent" id="signalThreePercent">0%</div><div class="progress-track"><div class="progress-fill" id="signalThreeBar"></div></div></article>
+                <article class="insight-card"><h3 id="insightLabelFour">Service respect</h3><div class="donut-wrap"><div class="donut" id="signalFourDonut"><span class="donut-label" id="signalFourPercent">0%</span></div><p id="signalFourText" style="margin:0;color:var(--muted);font-weight:700;line-height:1.45;">Percentage reporting respectful service.</p></div></article>
+                <article class="insight-card"><h3>Top priority</h3><div class="big-percent" id="topPriorityText" style="font-size:34px;">—</div><div class="bar-list" id="priorityBars"></div></article>
+                <article class="insight-card"><h3>Recommendation</h3><div class="big-percent" id="insightRecommendation" style="font-size:34px;">Fix registration queue first.</div><p style="color:var(--muted);font-weight:700;line-height:1.45;margin:0;">Generated from the highest priority signal.</p></article>
+                <article class="insight-card wide"><h3>Response trend</h3><div class="grid trend-grid"><div class="trend-card"><b id="trendToday">0</b><span>Responses today</span></div><div class="trend-card"><b id="trendSeven">0</b><span>Responses in last 7 days</span></div><div class="trend-card"><b id="trendPace">0%</b><span>Target pace</span></div></div></article>
+              </div>
+            </div>
+
+            <div id="responsesTab" class="tab-view" role="tabpanel">
+              <article class="panel">
+                <h3>Responses</h3>
+                <div class="table-tools">
+                  <div class="field"><label for="surveyFilter">Survey</label><select id="surveyFilter" aria-label="Filter responses by survey"><option value="">All surveys</option></select></div>
+                  <div class="field"><label for="locationFilter">Location</label><select id="locationFilter" aria-label="Filter responses by location"><option value="">All locations</option></select></div>
+                  <div class="field"><label for="priorityFilter">Priority</label><select id="priorityFilter" aria-label="Filter responses by priority"><option value="">All priorities</option></select></div>
+                  <div class="field"><label for="responseSearch">Search</label><input id="responseSearch" type="search" placeholder="Search responses" /></div>
+                </div>
+                <div class="table-wrap"><table><thead><tr><th>Time</th><th>Profile</th><th>Survey</th><th>Location</th><th>Answer 1</th><th>Answer 2</th><th>Answer 3</th><th>Priority</th><th>Trust score</th><th>Points</th></tr></thead><tbody id="responsesBody"></tbody></table></div>
+              </article>
+            </div>
+
+            <div id="exportTab" class="tab-view" role="tabpanel">
+              <article class="panel">
+                <h3>Export</h3>
+                <p class="panel-sub">Download decision data from this browser. Excel files are generated locally and open in spreadsheet software.</p>
+                <div class="export-actions">
+                  <button class="btn btn-primary" data-action="exportJSON" type="button">Export JSON</button>
+                  <button class="btn btn-soft" data-action="exportCSV" type="button">Export CSV</button>
+                  <button class="btn btn-green" data-action="exportExcel" type="button">Download Excel</button>
+                  <button class="btn btn-gold" data-action="copySummary" type="button">Copy Insight Summary</button>
+                </div>
+                <div id="insightSummary" class="summary-box" aria-label="Insight summary"></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="citizen" class="view section-pad" aria-labelledby="citizen-title">
+        <div class="grid citizen-grid">
+          <div class="citizen-copy">
+            <span class="eyebrow">Citizen App</span>
+            <h2 id="citizen-title">A two-minute answer can improve a service.</h2>
+            <p>Citizens answer relevant questions, earn Jina Points, and help institutions understand what needs to change first.</p>
+            <div class="citizen-proof"><div><b id="citizenRewardProof">40</b><span>Jina Points per response</span></div><div><b>92</b><span>Citizen trust score</span></div><div><b id="citizenQuestionProof">5</b><span>Short questions</span></div></div>
+          </div>
+          <div class="phone" aria-label="Citizen mobile app"><div class="phone-screen"><div class="phone-top"><b>Jina</b><div class="phone-signal" aria-hidden="true"><span></span><span></span><span></span></div></div><div id="phoneBody" class="phone-body"></div></div></div>
+        </div>
+      </section>
+
+      <section id="system" class="view section-pad" aria-labelledby="system-title">
+        <div class="section-heading"><div><span class="eyebrow">Local browser storage</span><h2 id="system-title">System</h2></div><p>Manage Jina data stored in this browser.</p></div>
+        <div class="grid system-grid">
+          <article class="system-card"><span>Stored surveys</span><b id="storedSurveys">0</b></article>
+          <article class="system-card"><span>Stored responses</span><b id="storedResponses">0</b></article>
+          <article class="system-card"><span>Wallet points</span><b id="storedWallet">0</b></article>
+          <article class="system-card"><span>Last updated</span><b id="lastUpdated" style="font-size:22px;line-height:1.15;">—</b></article>
+        </div>
+        <article class="panel" style="margin-top:18px;">
+          <h3>Data controls</h3>
+          <div class="system-actions">
+            <button class="btn btn-primary" data-action="loadStarter" type="button">Load Starter Records</button>
+            <button class="btn btn-danger" data-action="clearData" type="button">Clear Data</button>
+            <button class="btn btn-soft" data-action="downloadAll" type="button">Download JSON</button>
+            <button class="btn btn-green" data-action="downloadAllExcel" type="button">Download Excel</button>
+            <button class="btn btn-gold" data-action="resetWallet" type="button">Reset Wallet</button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">Data is stored locally in this browser.</footer>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
+    <div class="modal"><h3 id="modalTitle">Confirm action</h3><p id="modalText">Are you sure?</p><div class="modal-actions"><button class="btn btn-soft" id="modalCancel" type="button">Cancel</button><button class="btn btn-primary" id="modalConfirm" type="button">Confirm</button></div></div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const KEYS = {
+      surveys: "jina_surveys",
+      responses: "jina_responses",
+      wallet: "jina_wallet",
+      targeting: "jina_targeting",
+      settings: "jina_settings"
+    };
+
+    const defaultProfiles = [
+      { id: "personal", name: "Citizen Voice", type: "Personal", sector: "Community", location: "Thimphu", description: "A personal feedback voice for civic, campus, or community questions.", icon: "PV" },
+      { id: "company", name: "Druk Retail Company", type: "Company", sector: "Private sector", location: "Thimphu", description: "A business profile for customer experience, product feedback, and market insight.", icon: "CO" },
+      { id: "government", name: "Government Service Office", type: "Government Office", sector: "Public service", location: "Thimphu", description: "A public office profile for citizen service feedback and policy signals.", icon: "GO" },
+      { id: "hospital", name: "Hospital Service Team", type: "Hospital", sector: "Health service", location: "Thimphu", description: "A hospital profile for patient experience, OPD flow, and service improvement.", icon: "HS" }
+    ];
+
+    const templates = {
+      hospital: {
+        title: "Patient Experience Pulse",
+        institution: "Hospital Service Team",
+        useCase: "Patient experience",
+        description: "Hospital service feedback for OPD improvement.",
+        reward: 40,
+        profileId: "hospital",
+        questions: [
+          { text: "How long did you wait?", options: ["Under 15 min", "15–30 min", "30–60 min", "Over 60 min"] },
+          { text: "Were medicine instructions clear?", options: ["Very clear", "Somewhat clear", "Not clear", "Did not receive medicine"] },
+          { text: "Was hospital navigation easy?", options: ["Easy", "Okay", "Confusing", "Very confusing"] },
+          { text: "Was the service respectful?", options: ["Yes", "Mostly", "Not really", "No"] },
+          { text: "What should improve first?", options: ["Registration queue", "Medicine instructions", "Cleanliness", "Signage", "Staff communication", "Waiting area"] }
+        ]
+      },
+      company: {
+        title: "Customer Experience Pulse",
+        institution: "Druk Retail Company",
+        useCase: "Customer insight",
+        description: "Customer feedback for service, product, and brand decisions.",
+        reward: 30,
+        profileId: "company",
+        questions: [
+          { text: "How satisfied were you with the service?", options: ["Very satisfied", "Satisfied", "Neutral", "Not satisfied"] },
+          { text: "Was the product information clear?", options: ["Very clear", "Clear", "Somewhat unclear", "Not clear"] },
+          { text: "How likely are you to return?", options: ["Very likely", "Likely", "Not sure", "Unlikely"] },
+          { text: "What mattered most to you?", options: ["Price", "Quality", "Service", "Convenience", "Trust"] },
+          { text: "What should improve first?", options: ["Service speed", "Product quality", "Pricing", "Staff communication", "Payment options", "Store layout"] }
+        ]
+      },
+      government: {
+        title: "Public Service Pulse",
+        institution: "Government Service Office",
+        useCase: "Public service feedback",
+        description: "Citizen feedback for faster and clearer public service delivery.",
+        reward: 35,
+        profileId: "government",
+        questions: [
+          { text: "Was the service process easy to understand?", options: ["Very easy", "Easy", "Somewhat difficult", "Difficult"] },
+          { text: "How long did the service take?", options: ["Same day", "1–3 days", "4–7 days", "More than a week"] },
+          { text: "Were requirements clearly explained?", options: ["Very clear", "Clear", "Not clear", "I had to ask repeatedly"] },
+          { text: "Was staff support helpful?", options: ["Very helpful", "Helpful", "Not very helpful", "Not helpful"] },
+          { text: "What should improve first?", options: ["Process clarity", "Waiting time", "Online access", "Staff communication", "Document checklist", "Follow-up updates"] }
+        ]
+      },
+      personal: {
+        title: "Community Voice Pulse",
+        institution: "Citizen Voice",
+        useCase: "Community feedback",
+        description: "A simple pulse survey for local voices and community priorities.",
+        reward: 20,
+        profileId: "personal",
+        questions: [
+          { text: "Which local issue matters most right now?", options: ["Youth opportunities", "Cleanliness", "Road safety", "Public spaces", "Digital access"] },
+          { text: "How strongly do you feel about this issue?", options: ["Very strongly", "Strongly", "Moderately", "Not strongly"] },
+          { text: "Would you participate in a local solution?", options: ["Yes", "Maybe", "Not sure", "No"] },
+          { text: "What kind of support is needed?", options: ["Funding", "Volunteers", "Leadership", "Information", "Partnerships"] },
+          { text: "What should improve first?", options: ["Awareness", "Coordination", "Access", "Safety", "Cleanliness", "Youth engagement"] }
+        ]
+      }
+    };
+
+    const defaultTargeting = { targetGroup: "OPD patients", visitWindow: "Last 30 days", locations: ["Thimphu", "Paro", "Punakha"], age: "18+", targetResponses: 300 };
+
+    let surveys = loadSurveys();
+    let responses = safeParse(KEYS.responses, []);
+    let wallet = Number(safeParse(KEYS.wallet, 0)) || 0;
+    let targeting = safeParse(KEYS.targeting, defaultTargeting);
+    let settings = safeParse(KEYS.settings, { activeSurveyId: surveys[0].id, activeProfileId: "hospital", profiles: clone(defaultProfiles), lastUpdated: null });
+
+    settings.profiles = normalizeProfiles(settings.profiles);
+    if (!settings.activeSurveyId || !surveys.some(s => s.id === settings.activeSurveyId)) settings.activeSurveyId = surveys[0].id;
+    if (!settings.activeProfileId || !settings.profiles.some(p => p.id === settings.activeProfileId)) settings.activeProfileId = currentSurvey().profileId || "hospital";
+
+    let starterAggregate = createStarterRecords(25, currentSurvey());
+    let citizenState = { screen: "home", questionIndex: 0, answers: [], lastPoints: 0 };
+
+    function clone(value) { return JSON.parse(JSON.stringify(value)); }
+
+    function safeParse(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw === null) return clone(fallback);
+        const parsed = JSON.parse(raw);
+        return parsed === null || parsed === undefined ? clone(fallback) : parsed;
+      } catch {
+        localStorage.removeItem(key);
+        return clone(fallback);
+      }
+    }
+
+    function normalizeProfiles(input) {
+      const list = Array.isArray(input) ? input : [];
+      const merged = defaultProfiles.map(profile => ({ ...profile, ...(list.find(p => p.id === profile.id) || {}) }));
+      return merged;
+    }
+
+    function loadSurveys() {
+      try {
+        const raw = localStorage.getItem(KEYS.surveys);
+        if (!raw) return [makeSurveyFromTemplate("hospital")];
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const list = parsed.map(normalizeSurvey).filter(Boolean);
+          return list.length ? list : [makeSurveyFromTemplate("hospital")];
+        }
+        if (parsed && typeof parsed === "object") return [normalizeSurvey(parsed) || makeSurveyFromTemplate("hospital")];
+        return [makeSurveyFromTemplate("hospital")];
+      } catch {
+        localStorage.removeItem(KEYS.surveys);
+        return [makeSurveyFromTemplate("hospital")];
+      }
+    }
+
+    function normalizeSurvey(input) {
+      if (!input || typeof input !== "object") return null;
+      const base = makeSurveyFromTemplate(input.template || "hospital");
+      const rawQuestions = Array.isArray(input.questions) ? input.questions : base.questions;
+      return {
+        id: input.id || cryptoId(),
+        template: input.template || "hospital",
+        title: input.title || base.title,
+        institution: input.institution || base.institution,
+        useCase: input.useCase || base.useCase,
+        description: input.description || base.description,
+        reward: Math.max(0, Number(input.reward) || base.reward),
+        profileId: input.profileId || base.profileId,
+        questions: rawQuestions.map((q, idx) => {
+          if (typeof q === "string") return { text: q, options: base.questions[idx]?.options || ["Yes", "No", "Not sure"] };
+          return { text: q.text || base.questions[idx]?.text || `Question ${idx + 1}`, options: normalizeOptions(q.options || base.questions[idx]?.options) };
+        }).slice(0, 12)
+      };
+    }
+
+    function normalizeOptions(options) {
+      const list = Array.isArray(options) ? options : String(options || "").split(",");
+      const cleaned = list.map(x => String(x).trim()).filter(Boolean);
+      return cleaned.length ? cleaned : ["Yes", "No", "Not sure"];
+    }
+
+    function makeSurveyFromTemplate(name) {
+      const t = templates[name] || templates.hospital;
+      return { id: cryptoId(), template: name, title: t.title, institution: t.institution, useCase: t.useCase, description: t.description, reward: t.reward, profileId: t.profileId, questions: clone(t.questions) };
+    }
+
+    function saveKey(key, value, mark = true) {
+      localStorage.setItem(key, JSON.stringify(value));
+      if (mark) markUpdated();
+    }
+
+    function saveAllCore() {
+      saveKey(KEYS.surveys, surveys, false);
+      saveKey(KEYS.responses, responses, false);
+      saveKey(KEYS.wallet, wallet, false);
+      saveKey(KEYS.targeting, targeting, false);
+      saveKey(KEYS.settings, settings, false);
+    }
+
+    function markUpdated() {
+      settings.lastUpdated = new Date().toISOString();
+      localStorage.setItem(KEYS.settings, JSON.stringify(settings));
+    }
+
+    function ensureStorage() {
+      if (!localStorage.getItem(KEYS.surveys)) saveKey(KEYS.surveys, surveys, false);
+      if (!localStorage.getItem(KEYS.responses)) saveKey(KEYS.responses, responses, false);
+      if (!localStorage.getItem(KEYS.wallet)) saveKey(KEYS.wallet, wallet, false);
+      if (!localStorage.getItem(KEYS.targeting)) saveKey(KEYS.targeting, targeting, false);
+      if (!localStorage.getItem(KEYS.settings)) saveKey(KEYS.settings, settings, false);
+    }
+
+    function currentSurvey() { return surveys.find(s => s.id === settings.activeSurveyId) || surveys[0]; }
+    function activeProfile() { return settings.profiles.find(p => p.id === settings.activeProfileId) || settings.profiles[0]; }
+    function profileForSurvey(survey = currentSurvey()) { return settings.profiles.find(p => p.id === survey.profileId) || activeProfile(); }
+
+    function visibleResponses() {
+      const survey = currentSurvey();
+      const list = Array.isArray(responses) ? responses.filter(r => r.surveyId === survey.id || (!r.surveyId && survey.template === "hospital")) : [];
+      return list.length ? list : starterAggregate;
+    }
+
+    function getStats() {
+      const survey = currentSurvey();
+      const source = visibleResponses();
+      const total = source.length;
+      const target = Math.max(1, Number(targeting.targetResponses) || 300);
+      const pct = value => total ? Math.round((value / total) * 100) : 0;
+      const count = fn => total ? source.filter(fn).length : 0;
+
+      let signalOne = 0, signalTwo = 0, signalThree = 0, signalFour = 0;
+      let labels = ["Question 1 signal", "Question 2 signal", "Question 3 signal", "Positive signal"];
+      let signalFourText = "Share of positive or useful signals.";
+
+      if (survey.template === "hospital") {
+        labels = ["Waiting time", "Medicine clarity", "Navigation", "Service respect"];
+        signalOne = pct(count(r => ["30–60 min", "Over 60 min"].includes(answerValue(r, 0, "wait"))));
+        signalTwo = pct(count(r => ["Not clear", "Did not receive medicine"].includes(answerValue(r, 1, "medicine"))));
+        signalThree = pct(count(r => ["Confusing", "Very confusing"].includes(answerValue(r, 2, "navigation"))));
+        signalFour = pct(count(r => ["Yes", "Mostly"].includes(answerValue(r, 3, "respect"))));
+        signalFourText = "Percentage reporting respectful service.";
+      } else {
+        signalOne = topAnswerPercent(source, 0);
+        signalTwo = topAnswerPercent(source, 1);
+        signalThree = topAnswerPercent(source, 2);
+        signalFour = pct(count(r => Number(r.trustScore) >= 90));
+        labels = ["Top answer Q1", "Top answer Q2", "Top answer Q3", "High trust responses"];
+        signalFourText = "Share of responses with trust score 90 or higher.";
+      }
+
+      const priorityCounts = {};
+      source.forEach(r => {
+        const key = r.priority || answerValue(r, survey.questions.length - 1, "priority") || "Unspecified";
+        priorityCounts[key] = (priorityCounts[key] || 0) + 1;
+      });
+      const topPriority = Object.entries(priorityCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "Unspecified";
+      const rewards = source.reduce((sum, r) => sum + (Number(r.points) || 0), 0);
+      const avgTrust = total ? Math.round(source.reduce((sum, r) => sum + (Number(r.trustScore) || 0), 0) / total) : 0;
+
+      const todayKey = new Date().toISOString().slice(0,10);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const today = source.filter(r => String(r.time || "").slice(0,10) === todayKey).length;
+      const seven = source.filter(r => new Date(r.time) >= sevenDaysAgo).length;
+
+      return { total, signalOne, signalTwo, signalThree, signalFour, labels, signalFourText, topPriority, priorityCounts, rewards, avgTrust, progress: Math.min(100, Math.round((total / target) * 100)), recommendation: recommendationFor(topPriority, survey.template), today, seven };
+    }
+
+    function answerValue(response, index, fallbackKey) {
+      if (response.answers && response.answers[index]) return response.answers[index].value;
+      return response[fallbackKey] || "";
+    }
+
+    function topAnswerPercent(source, index) {
+      if (!source.length) return 0;
+      const counts = {};
+      source.forEach(r => {
+        const value = answerValue(r, index, "") || "Unspecified";
+        counts[value] = (counts[value] || 0) + 1;
+      });
+      const top = Math.max(0, ...Object.values(counts));
+      return Math.round((top / source.length) * 100);
+    }
+
+    function recommendationFor(priority, template) {
+      if (template === "hospital") {
+        const map = {
+          "Registration queue": "Fix registration queue first.",
+          "Medicine instructions": "Improve pharmacy instruction flow.",
+          "Signage": "Improve OPD wayfinding.",
+          "Staff communication": "Strengthen communication at service points.",
+          "Cleanliness": "Prioritize cleanliness monitoring.",
+          "Waiting area": "Improve waiting area comfort."
+        };
+        return map[priority] || "Fix registration queue first.";
+      }
+      if (template === "company") return `Improve ${String(priority || "the top customer issue").toLowerCase()} first.`;
+      if (template === "government") return `Prioritize ${String(priority || "the top service issue").toLowerCase()} in the next service cycle.`;
+      if (template === "personal") return `Turn ${String(priority || "the top community issue").toLowerCase()} into the first action area.`;
+      return `Review ${priority || "the top issue"} first.`;
+    }
+
+    function keyFinding(stats) {
+      const top = stats.topPriority || "Unspecified";
+      return `${top} is the strongest signal in the current response set.`;
+    }
+
+    function renderAll() {
+      renderSidePanel();
+      renderForms();
+      renderProfiles();
+      renderOverview();
+      renderInsights();
+      renderResponseFilters();
+      renderResponsesTable();
+      renderExportSummary();
+      renderCitizen();
+      renderSystem();
+    }
+
+    function renderSidePanel() {
+      const s = currentSurvey();
+      const p = profileForSurvey(s);
+      document.getElementById("institution-title").textContent = s.title;
+      document.getElementById("sideSub").textContent = s.description || "Collect decision-ready feedback data.";
+      document.getElementById("sideProfile").textContent = p.type;
+      document.getElementById("sideSurvey").textContent = compact(s.useCase || s.title, 14);
+      document.getElementById("sideReward").textContent = `${Number(s.reward) || 0}`;
+    }
+
+    function renderForms() {
+      const s = currentSurvey();
+      const surveySelect = document.getElementById("surveySelect");
+      surveySelect.innerHTML = surveys.map(sv => `<option value="${escapeHtml(sv.id)}">${escapeHtml(sv.title)}</option>`).join("");
+      surveySelect.value = s.id;
+
+      const profileSelect = document.getElementById("surveyProfile");
+      profileSelect.innerHTML = settings.profiles.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)} · ${escapeHtml(p.type)}</option>`).join("");
+      profileSelect.value = s.profileId;
+
+      document.getElementById("surveyTitle").value = s.title || "";
+      document.getElementById("surveyInstitution").value = s.institution || "";
+      document.getElementById("surveyReward").value = Number(s.reward) || 0;
+      document.getElementById("surveyUseCase").value = s.useCase || "";
+      document.getElementById("surveyDescription").value = s.description || "";
+      renderQuestionEditors();
+
+      document.getElementById("targetGroup").value = targeting.targetGroup || "";
+      document.getElementById("visitWindow").value = targeting.visitWindow || "";
+      document.getElementById("targetResponses").value = Number(targeting.targetResponses) || 300;
+      document.getElementById("targetAge").value = targeting.age || "";
+      document.getElementById("targetLocations").value = Array.isArray(targeting.locations) ? targeting.locations.join(", ") : "";
+      document.getElementById("targetGroupCard").textContent = targeting.targetGroup || "OPD patients";
+      document.getElementById("visitWindowCard").textContent = targeting.visitWindow || "Last 30 days";
+      document.getElementById("targetResponsesCard").textContent = Number(targeting.targetResponses) || 300;
+    }
+
+    function renderQuestionEditors() {
+      const s = currentSurvey();
+      document.getElementById("questionList").innerHTML = s.questions.map((q, index) => `
+        <div class="question-editor" data-question-index="${index}">
+          <span class="question-number">${index + 1}</span>
+          <div class="field"><label for="questionText${index}">Question</label><input id="questionText${index}" data-question-text="${index}" type="text" value="${escapeHtml(q.text)}" /></div>
+          <div class="field"><label for="questionOptions${index}">Options</label><input id="questionOptions${index}" data-question-options="${index}" type="text" value="${escapeHtml((q.options || []).join(", "))}" /></div>
+          <button class="btn btn-danger btn-small remove-question" data-remove-question="${index}" type="button">Remove</button>
+        </div>
+      `).join("");
+    }
+
+    function renderProfiles() {
+      const cards = document.getElementById("profileCards");
+      cards.innerHTML = settings.profiles.map(p => `
+        <article class="profile-card-ui ${p.id === settings.activeProfileId ? "active" : ""}" data-profile-card="${escapeHtml(p.id)}" tabindex="0" role="button" aria-label="Use ${escapeHtml(p.name)} profile">
+          <div>
+            <div class="profile-icon">${escapeHtml(p.icon || initials(p.name))}</div>
+            <h3>${escapeHtml(p.name)}</h3>
+            <p>${escapeHtml(p.description)}</p>
+          </div>
+          <span class="pill ${p.id === settings.activeProfileId ? "gold" : ""}">${escapeHtml(p.type)}</span>
+        </article>
+      `).join("");
+
+      const p = activeProfile();
+      document.getElementById("profileName").value = p.name || "";
+      document.getElementById("profileType").value = p.type || "";
+      document.getElementById("profileSector").value = p.sector || "";
+      document.getElementById("profileLocation").value = p.location || "";
+      document.getElementById("profileDescription").value = p.description || "";
+    }
+
+    function renderOverview() {
+      const stats = getStats();
+      setMetric("metricTotal", stats.total);
+      setMetric("metricRewards", stats.rewards);
+      setMetric("metricTrust", stats.avgTrust);
+      document.getElementById("metricIssue").textContent = compact(stats.topPriority, 10);
+      setMetric("metricProgress", stats.progress, "%");
+      document.getElementById("overviewRecommendation").textContent = stats.recommendation;
+    }
+
+    function renderInsights() {
+      const stats = getStats();
+      document.getElementById("insightLabelOne").textContent = stats.labels[0];
+      document.getElementById("insightLabelTwo").textContent = stats.labels[1];
+      document.getElementById("insightLabelThree").textContent = stats.labels[2];
+      document.getElementById("insightLabelFour").textContent = stats.labels[3];
+      document.getElementById("signalOnePercent").textContent = `${stats.signalOne}%`;
+      document.getElementById("signalTwoPercent").textContent = `${stats.signalTwo}%`;
+      document.getElementById("signalThreePercent").textContent = `${stats.signalThree}%`;
+      document.getElementById("signalFourPercent").textContent = `${stats.signalFour}%`;
+      document.getElementById("signalFourText").textContent = stats.signalFourText;
+      setBar("signalOneBar", stats.signalOne);
+      setBar("signalTwoBar", stats.signalTwo);
+      setBar("signalThreeBar", stats.signalThree);
+      document.getElementById("signalFourDonut").style.setProperty("--value", stats.signalFour);
+      document.getElementById("topPriorityText").textContent = stats.topPriority;
+      document.getElementById("insightRecommendation").textContent = stats.recommendation;
+      document.getElementById("trendToday").textContent = stats.today;
+      document.getElementById("trendSeven").textContent = stats.seven;
+      document.getElementById("trendPace").textContent = `${stats.progress}%`;
+      const maxCount = Math.max(1, ...Object.values(stats.priorityCounts));
+      document.getElementById("priorityBars").innerHTML = Object.entries(stats.priorityCounts).sort((a,b) => b[1] - a[1]).map(([name, count]) => `
+        <div class="bar-row"><span>${escapeHtml(compact(name, 18))}</span><div class="mini-track"><div class="mini-fill" style="width:${Math.round((count / maxCount) * 100)}%"></div></div><strong>${count}</strong></div>
+      `).join("");
+    }
+
+    function renderResponseFilters() {
+      const currentSurveyFilter = document.getElementById("surveyFilter").value;
+      const currentLocation = document.getElementById("locationFilter").value;
+      const currentPriority = document.getElementById("priorityFilter").value;
+      document.getElementById("surveyFilter").innerHTML = `<option value="">All surveys</option>` + surveys.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.title)}</option>`).join("");
+      document.getElementById("surveyFilter").value = surveys.some(s => s.id === currentSurveyFilter) ? currentSurveyFilter : "";
+      const locations = [...new Set([...(Array.isArray(targeting.locations) ? targeting.locations : []), ...responses.map(r => r.location).filter(Boolean)])];
+      document.getElementById("locationFilter").innerHTML = `<option value="">All locations</option>` + locations.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+      document.getElementById("locationFilter").value = locations.includes(currentLocation) ? currentLocation : "";
+      const priorities = [...new Set(responses.map(r => r.priority).filter(Boolean).concat((currentSurvey().questions.at(-1)?.options || [])))];
+      document.getElementById("priorityFilter").innerHTML = `<option value="">All priorities</option>` + priorities.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+      document.getElementById("priorityFilter").value = priorities.includes(currentPriority) ? currentPriority : "";
+    }
+
+    function renderResponsesTable() {
+      const tbody = document.getElementById("responsesBody");
+      const surveyFilter = document.getElementById("surveyFilter").value;
+      const loc = document.getElementById("locationFilter").value;
+      const priority = document.getElementById("priorityFilter").value;
+      const search = document.getElementById("responseSearch").value.trim().toLowerCase();
+      const filtered = responses.filter(r => {
+        const joined = JSON.stringify(r).toLowerCase();
+        return (!surveyFilter || r.surveyId === surveyFilter) && (!loc || r.location === loc) && (!priority || r.priority === priority) && (!search || joined.includes(search));
+      });
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">No stored responses match this view.</div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = filtered.slice().sort((a,b) => new Date(b.time) - new Date(a.time)).map(r => {
+        const s = surveys.find(x => x.id === r.surveyId) || currentSurvey();
+        const p = settings.profiles.find(x => x.id === r.profileId) || profileForSurvey(s);
+        const a1 = answerValue(r, 0, "wait");
+        const a2 = answerValue(r, 1, "medicine");
+        const a3 = answerValue(r, 2, "navigation");
+        return `<tr><td>${escapeHtml(formatDateTime(r.time))}</td><td>${escapeHtml(p.type)}</td><td>${escapeHtml(s.title)}</td><td>${escapeHtml(r.location || "Thimphu")}</td><td>${escapeHtml(a1)}</td><td>${escapeHtml(a2)}</td><td>${escapeHtml(a3)}</td><td><span class="pill gold">${escapeHtml(r.priority || "")}</span></td><td><span class="pill green">${Number(r.trustScore) || 0}</span></td><td>${Number(r.points) || 0}</td></tr>`;
+      }).join("");
+    }
+
+    function renderExportSummary() { document.getElementById("insightSummary").textContent = buildInsightSummary(); }
+
+    function buildInsightSummary() {
+      const stats = getStats();
+      const s = currentSurvey();
+      const p = profileForSurvey(s);
+      return [`${s.title}`, `Profile: ${p.name}`, `Total responses: ${stats.total}`, `Top issue: ${stats.topPriority}`, `Key finding: ${keyFinding(stats)}`, `Recommended action: ${stats.recommendation}`].join("\n");
+    }
+
+    function renderCitizen() {
+      const body = document.getElementById("phoneBody");
+      const s = currentSurvey();
+      const p = profileForSurvey(s);
+      document.getElementById("citizenRewardProof").textContent = Number(s.reward) || 0;
+      document.getElementById("citizenQuestionProof").textContent = s.questions.length;
+
+      if (citizenState.screen === "survey") {
+        const index = citizenState.questionIndex;
+        const q = s.questions[index];
+        const selected = citizenState.answers[index]?.value;
+        const isLast = index === s.questions.length - 1;
+        body.innerHTML = `<div class="survey-card"><div class="question-progress"><span>Question ${index + 1} of ${s.questions.length}</span><div class="phone-progress" aria-hidden="true"><span style="width:${((index + 1) / s.questions.length) * 100}%"></span></div></div><h3 class="question-title">${escapeHtml(q.text)}</h3><div class="options">${q.options.map(option => `<button class="option-btn ${selected === option ? "selected" : ""}" data-answer="${escapeHtml(option)}" type="button">${escapeHtml(option)}</button>`).join("")}</div><div class="phone-action-row"><button class="btn btn-soft" data-action="citizenBack" type="button">${index === 0 ? "Close" : "Back"}</button><button class="btn btn-primary" data-action="${isLast ? "submitCitizen" : "citizenNext"}" type="button" ${selected ? "" : "disabled"}>${isLast ? "Submit" : "Next"}</button></div></div>`;
+        return;
+      }
+
+      if (citizenState.screen === "success") {
+        body.innerHTML = `<div class="success-card"><div class="checkmark" aria-hidden="true"><svg width="31" height="31" viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="success-points">+${Number(citizenState.lastPoints) || 0}</div><h3>Thank you.</h3><p>Your experience helps improve services.</p><div class="phone-action-row"><button class="btn btn-soft" data-action="viewWallet" type="button">View Wallet</button><button class="btn btn-primary" data-action="startSurvey" type="button">Answer Again</button></div></div>`;
+        return;
+      }
+
+      if (citizenState.screen === "wallet") {
+        body.innerHTML = `<div class="wallet-card"><h3>Wallet</h3><p>Jina Points earned from useful feedback.</p><div class="phone-stats"><div class="phone-stat"><span>Balance</span><b>${wallet}</b></div><div class="phone-stat"><span>Trust Score</span><b>92</b></div></div><div class="phone-action-row"><button class="btn btn-soft" data-action="citizenHome" type="button">Back</button><button class="btn btn-primary" data-action="startSurvey" type="button">Answer Again</button></div></div>`;
+        return;
+      }
+
+      body.innerHTML = `<div class="profile-card"><div class="profile-row"><div><h3>Citizen Profile</h3><p>Location: Thimphu</p></div><div class="avatar" aria-hidden="true">JP</div></div><div class="phone-stats"><div class="phone-stat"><span>Wallet</span><b>${wallet}</b></div><div class="phone-stat"><span>Trust Score</span><b>92</b></div></div><div class="badges"><span class="pill green">Verified</span><span class="pill gold">Helpful Voice</span></div></div><div class="survey-card"><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(p.name)} · ${escapeHtml(s.description)}</p><div class="survey-meta"><span class="pill">${Math.max(1, Math.ceil(s.questions.length * .4))} minutes</span><span class="pill gold">${Number(s.reward) || 0} Jina Points</span><span class="pill green">Aggregated insights only</span></div><button class="btn btn-primary" data-action="startSurvey" type="button" style="width:100%;">Start</button></div>`;
+    }
+
+    function renderSystem() {
+      document.getElementById("storedSurveys").textContent = surveys.length;
+      document.getElementById("storedResponses").textContent = responses.length;
+      document.getElementById("storedWallet").textContent = wallet;
+      document.getElementById("lastUpdated").textContent = settings.lastUpdated ? formatDateTime(settings.lastUpdated) : "—";
+    }
+
+    function saveSurveyFromForm() {
+      const s = currentSurvey();
+      s.title = document.getElementById("surveyTitle").value.trim() || "Untitled Survey";
+      s.institution = document.getElementById("surveyInstitution").value.trim() || activeProfile().name;
+      s.reward = Math.max(0, Number(document.getElementById("surveyReward").value) || 0);
+      s.useCase = document.getElementById("surveyUseCase").value.trim() || "Feedback pulse";
+      s.description = document.getElementById("surveyDescription").value.trim() || "Rewarded citizen feedback.";
+      s.profileId = document.getElementById("surveyProfile").value || settings.activeProfileId;
+      s.questions = readQuestionEditors();
+      settings.activeProfileId = s.profileId;
+      saveKey(KEYS.surveys, surveys, false);
+      saveKey(KEYS.settings, settings);
+      renderAll();
+      showToast("Survey saved");
+    }
+
+    function readQuestionEditors() {
+      const items = [...document.querySelectorAll("[data-question-index]")];
+      const questions = items.map(item => {
+        const idx = item.dataset.questionIndex;
+        const text = item.querySelector(`[data-question-text="${idx}"]`).value.trim();
+        const options = item.querySelector(`[data-question-options="${idx}"]`).value.split(",").map(x => x.trim()).filter(Boolean);
+        return { text: text || "Untitled question", options: options.length ? options : ["Yes", "No", "Not sure"] };
+      });
+      return questions.length ? questions.slice(0, 12) : clone(templates.hospital.questions);
+    }
+
+    function saveTargeting() {
+      targeting = {
+        targetGroup: document.getElementById("targetGroup").value.trim() || defaultTargeting.targetGroup,
+        visitWindow: document.getElementById("visitWindow").value.trim() || defaultTargeting.visitWindow,
+        targetResponses: Math.max(1, Number(document.getElementById("targetResponses").value) || 300),
+        age: document.getElementById("targetAge").value.trim() || "18+",
+        locations: document.getElementById("targetLocations").value.split(",").map(x => x.trim()).filter(Boolean)
+      };
+      if (!targeting.locations.length) targeting.locations = clone(defaultTargeting.locations);
+      saveKey(KEYS.targeting, targeting);
+      renderAll();
+      showToast("Targeting saved");
+    }
+
+    function saveProfile() {
+      const p = activeProfile();
+      p.name = document.getElementById("profileName").value.trim() || p.name;
+      p.type = document.getElementById("profileType").value.trim() || p.type;
+      p.sector = document.getElementById("profileSector").value.trim() || p.sector;
+      p.location = document.getElementById("profileLocation").value.trim() || p.location;
+      p.description = document.getElementById("profileDescription").value.trim() || p.description;
+      p.icon = initials(p.type);
+      saveKey(KEYS.settings, settings);
+      renderAll();
+      showToast("Profile saved");
+    }
+
+    function submitCitizenResponse() {
+      const s = currentSurvey();
+      if (citizenState.answers.length !== s.questions.length || citizenState.answers.some(x => !x || !x.value)) return;
+      const reward = Math.max(0, Number(s.reward) || 0);
+      const trustScore = Math.floor(Math.random() * 13) + 86;
+      const p = profileForSurvey(s);
+      const response = {
+        id: cryptoId(), time: new Date().toISOString(), surveyId: s.id, surveyTitle: s.title, profileId: p.id, profileType: p.type,
+        location: "Thimphu", answers: citizenState.answers.map((a, i) => ({ question: s.questions[i].text, value: a.value })),
+        wait: citizenState.answers[0]?.value || "", medicine: citizenState.answers[1]?.value || "", navigation: citizenState.answers[2]?.value || "", respect: citizenState.answers[3]?.value || "",
+        priority: citizenState.answers.at(-1)?.value || "", trustScore, points: reward
+      };
+      responses.push(response);
+      wallet += reward;
+      citizenState = { screen: "success", questionIndex: 0, answers: [], lastPoints: reward };
+      saveKey(KEYS.responses, responses, false);
+      saveKey(KEYS.wallet, wallet);
+      markUpdated();
+      renderAll();
+      showToast("Response saved");
+    }
+
+    function createNewSurvey() {
+      const profile = activeProfile();
+      const templateName = profile.id === "government" ? "government" : profile.id === "company" ? "company" : profile.id === "personal" ? "personal" : "hospital";
+      const s = makeSurveyFromTemplate(templateName);
+      s.id = cryptoId();
+      s.title = "New Feedback Pulse";
+      s.profileId = profile.id;
+      s.institution = profile.name;
+      surveys.push(s);
+      settings.activeSurveyId = s.id;
+      saveKey(KEYS.surveys, surveys, false);
+      saveKey(KEYS.settings, settings);
+      renderAll();
+      showToast("New survey created");
+    }
+
+    function applyTemplate(templateName) {
+      const s = currentSurvey();
+      const t = makeSurveyFromTemplate(templateName);
+      Object.assign(s, { template: templateName, title: t.title, institution: t.institution, useCase: t.useCase, description: t.description, reward: t.reward, profileId: t.profileId, questions: t.questions });
+      settings.activeProfileId = t.profileId;
+      saveKey(KEYS.surveys, surveys, false);
+      saveKey(KEYS.settings, settings);
+      starterAggregate = createStarterRecords(25, s);
+      renderAll();
+      showToast("Template applied");
+    }
+
+    function deleteSurvey() {
+      if (surveys.length <= 1) { showToast("Keep at least one survey"); return; }
+      const s = currentSurvey();
+      showModal("Delete Survey", `Delete ${s.title}? Stored responses are kept for export.`, () => {
+        surveys = surveys.filter(x => x.id !== s.id);
+        settings.activeSurveyId = surveys[0].id;
+        saveKey(KEYS.surveys, surveys, false);
+        saveKey(KEYS.settings, settings);
+        renderAll();
+        showToast("Survey deleted");
+      });
+    }
+
+    function addQuestion() {
+      const s = currentSurvey();
+      if (s.questions.length >= 12) { showToast("Maximum 12 questions"); return; }
+      s.questions = readQuestionEditors();
+      s.questions.push({ text: `Question ${s.questions.length + 1}`, options: ["Yes", "No", "Not sure"] });
+      renderQuestionEditors();
+    }
+
+    function removeQuestion(index) {
+      const s = currentSurvey();
+      s.questions = readQuestionEditors();
+      if (s.questions.length <= 1) { showToast("Keep at least one question"); return; }
+      s.questions.splice(index, 1);
+      renderQuestionEditors();
+    }
+
+    function loadStarterRecords() {
+      showModal("Load Starter Records", "This replaces stored responses with 25 realistic field records for the current survey.", () => {
+        responses = createStarterRecords(25, currentSurvey());
+        saveKey(KEYS.responses, responses);
+        renderAll();
+        showToast("Starter records loaded");
+      });
+    }
+
+    function clearData() {
+      showModal("Clear Data", "This clears Jina survey, response, wallet, targeting, and settings data stored in this browser.", () => {
+        Object.values(KEYS).forEach(key => localStorage.removeItem(key));
+        surveys = [makeSurveyFromTemplate("hospital")];
+        responses = [];
+        wallet = 0;
+        targeting = clone(defaultTargeting);
+        settings = { activeSurveyId: surveys[0].id, activeProfileId: "hospital", profiles: clone(defaultProfiles), lastUpdated: null };
+        starterAggregate = createStarterRecords(25, currentSurvey());
+        ensureStorage();
+        renderAll();
+        showToast("Data cleared");
+      });
+    }
+
+    function resetWallet() {
+      showModal("Reset Wallet", "This sets wallet points to 0 in this browser.", () => { wallet = 0; saveKey(KEYS.wallet, wallet); renderAll(); showToast("Wallet reset"); });
+    }
+
+    function createStarterRecords(n, survey) {
+      const locations = ["Thimphu", "Paro", "Punakha"];
+      const p = settings?.profiles?.find(x => x.id === survey.profileId) || defaultProfiles.find(x => x.id === survey.profileId) || defaultProfiles[3];
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - Math.floor(Math.random() * 20));
+        date.setHours(8 + Math.floor(Math.random() * 9), Math.floor(Math.random() * 60), 0, 0);
+        const answers = survey.questions.map((q, idx) => {
+          let options = q.options || ["Yes", "No", "Not sure"];
+          if (survey.template === "hospital" && idx === 0) options = ["Under 15 min", "15–30 min", "30–60 min", "30–60 min", "Over 60 min"];
+          if (survey.template === "hospital" && idx === 4) options = ["Registration queue", "Registration queue", "Registration queue", "Medicine instructions", "Staff communication", "Signage", "Waiting area", "Cleanliness"];
+          return { question: q.text, value: pick(options) };
+        });
+        data.push({
+          id: cryptoId(), time: date.toISOString(), surveyId: survey.id, surveyTitle: survey.title, profileId: p.id, profileType: p.type, location: pick(locations), answers,
+          wait: answers[0]?.value || "", medicine: answers[1]?.value || "", navigation: answers[2]?.value || "", respect: answers[3]?.value || "", priority: answers.at(-1)?.value || "",
+          trustScore: Math.floor(Math.random() * 13) + 86, points: Number(survey.reward) || 0
+        });
+      }
+      return data;
+    }
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function cryptoId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `jina-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+
+    function exportJSON() { downloadFile("jina-responses.json", JSON.stringify(responses, null, 2), "application/json"); }
+    function exportCSV() { downloadFile("jina-responses.csv", buildCSV(responsesToRows(responses)), "text/csv"); }
+    function exportExcel() { downloadExcel("jina-responses.xls", [{ name: "Responses", rows: responsesToRows(responses) }, { name: "Insight Summary", rows: summaryRows() }]); }
+    function downloadAllData() { downloadFile("jina-data.json", JSON.stringify({ surveys, profiles: settings.profiles, targeting, responses, wallet, settings, exportedAt: new Date().toISOString() }, null, 2), "application/json"); }
+    function downloadAllExcel() { downloadExcel("jina-data.xls", [{ name: "Surveys", rows: surveysToRows() }, { name: "Profiles", rows: profilesToRows() }, { name: "Responses", rows: responsesToRows(responses) }, { name: "Summary", rows: summaryRows() }]); }
+
+    function responsesToRows(list) {
+      return [["Time", "Profile", "Survey", "Location", "Answer 1", "Answer 2", "Answer 3", "Priority", "Trust score", "Points"]].concat(list.map(r => {
+        const s = surveys.find(x => x.id === r.surveyId) || currentSurvey();
+        const p = settings.profiles.find(x => x.id === r.profileId) || profileForSurvey(s);
+        return [formatDateTime(r.time), p.type, s.title, r.location || "", answerValue(r,0,"wait"), answerValue(r,1,"medicine"), answerValue(r,2,"navigation"), r.priority || "", r.trustScore || 0, r.points || 0];
+      }));
+    }
+
+    function surveysToRows() { return [["Title", "Owner", "Profile", "Use case", "Reward", "Questions"]].concat(surveys.map(s => [s.title, s.institution, profileForSurvey(s).type, s.useCase, s.reward, s.questions.map(q => q.text).join(" | ")])); }
+    function profilesToRows() { return [["Name", "Type", "Sector", "Location", "Description"]].concat(settings.profiles.map(p => [p.name, p.type, p.sector, p.location, p.description])); }
+    function summaryRows() { const stats = getStats(); const s = currentSurvey(); const p = profileForSurvey(s); return [["Field", "Value"], ["Survey", s.title], ["Profile", p.name], ["Total responses", stats.total], ["Top issue", stats.topPriority], ["Key finding", keyFinding(stats)], ["Recommended action", stats.recommendation]]; }
+
+    function buildCSV(rows) { return rows.map(row => row.map(csvEscape).join(",")).join("\n"); }
+    function csvEscape(value) { const str = String(value ?? ""); return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str; }
+
+    function downloadExcel(filename, sheets) {
+      const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif}h2{background:#071A2C;color:#fff;padding:10px}table{border-collapse:collapse;margin-bottom:28px}td,th{border:1px solid #d9dde5;padding:8px 10px}th{background:#F8F4EA}</style></head><body>${sheets.map(sheet => `<h2>${escapeHtml(sheet.name)}</h2><table>${sheet.rows.map((row, index) => `<tr>${row.map(cell => index === 0 ? `<th>${escapeHtml(cell)}</th>` : `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</table>`).join("")}</body></html>`;
+      downloadFile(filename, html, "application/vnd.ms-excel");
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copySummary() {
+      const text = buildInsightSummary();
+      try { await navigator.clipboard.writeText(text); }
+      catch {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+      }
+      showToast("Insight summary copied");
+    }
+
+    function setMetric(id, value, suffix = "") {
+      const el = document.getElementById(id);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const target = Number(value) || 0;
+      if (reduced) { el.textContent = `${target}${suffix}`; return; }
+      const current = Number(String(el.textContent).replace(/[^\d.-]/g, "")) || 0;
+      const start = performance.now();
+      const duration = 650;
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = `${Math.round(current + (target - current) * eased)}${suffix}`;
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+    function setBar(id, value) { requestAnimationFrame(() => { document.getElementById(id).style.width = `${Math.max(0, Math.min(100, value))}%`; }); }
+
+    function goSection(id) { document.querySelectorAll(".view").forEach(section => section.classList.toggle("active", section.id === id)); document.querySelectorAll("[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === id)); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    function goTab(id) { document.querySelectorAll("[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === id)); document.querySelectorAll(".tab-view").forEach(tab => tab.classList.toggle("active", tab.id === `${id}Tab`)); renderAll(); }
+
+    function formatDateTime(value) { if (!value) return "—"; const date = new Date(value); if (Number.isNaN(date.getTime())) return "—"; return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+    function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function compact(value, length) { const text = String(value || "—"); return text.length > length ? `${text.slice(0, Math.max(0, length - 1))}…` : text; }
+    function initials(text) { return String(text || "JP").split(/\s+/).map(x => x[0]).join("").slice(0,2).toUpperCase(); }
+
+    function showToast(message) { const toast = document.getElementById("toast"); toast.textContent = message; toast.classList.add("active"); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("active"), 2200); }
+    function showModal(title, text, onConfirm) {
+      const backdrop = document.getElementById("modalBackdrop");
+      const titleEl = document.getElementById("modalTitle");
+      const textEl = document.getElementById("modalText");
+      const confirm = document.getElementById("modalConfirm");
+      const cancel = document.getElementById("modalCancel");
+      titleEl.textContent = title;
+      textEl.textContent = text;
+      backdrop.classList.add("active");
+      const cleanup = () => { backdrop.classList.remove("active"); confirm.onclick = null; cancel.onclick = null; backdrop.onclick = null; };
+      confirm.onclick = () => { cleanup(); onConfirm(); };
+      cancel.onclick = cleanup;
+      backdrop.onclick = event => { if (event.target === backdrop) cleanup(); };
+      confirm.focus();
+    }
+
+    document.addEventListener("click", event => {
+      const sectionBtn = event.target.closest("[data-section]");
+      if (sectionBtn) { goSection(sectionBtn.dataset.section); return; }
+      const tabBtn = event.target.closest("[data-tab]");
+      if (tabBtn) { goTab(tabBtn.dataset.tab); return; }
+      const templateBtn = event.target.closest("[data-template]");
+      if (templateBtn) { applyTemplate(templateBtn.dataset.template); return; }
+      const profileCard = event.target.closest("[data-profile-card]");
+      if (profileCard) { settings.activeProfileId = profileCard.dataset.profileCard; saveKey(KEYS.settings, settings); renderAll(); showToast("Profile selected"); return; }
+      const removeBtn = event.target.closest("[data-remove-question]");
+      if (removeBtn) { removeQuestion(Number(removeBtn.dataset.removeQuestion)); return; }
+      const optionBtn = event.target.closest("[data-answer]");
+      if (optionBtn) { const i = citizenState.questionIndex; citizenState.answers[i] = { value: optionBtn.dataset.answer }; renderCitizen(); return; }
+      const actionBtn = event.target.closest("[data-action]");
+      if (!actionBtn) return;
+      const action = actionBtn.dataset.action;
+      if (action === "newSurvey") createNewSurvey();
+      if (action === "saveSurvey") saveSurveyFromForm();
+      if (action === "deleteSurvey") deleteSurvey();
+      if (action === "addQuestion") addQuestion();
+      if (action === "saveProfile") saveProfile();
+      if (action === "saveTargeting") saveTargeting();
+      if (action === "exportJSON") exportJSON();
+      if (action === "exportCSV") exportCSV();
+      if (action === "exportExcel") exportExcel();
+      if (action === "copySummary") copySummary();
+      if (action === "downloadAll") downloadAllData();
+      if (action === "downloadAllExcel") downloadAllExcel();
+      if (action === "loadStarter") loadStarterRecords();
+      if (action === "clearData") clearData();
+      if (action === "resetWallet") resetWallet();
+      if (action === "startSurvey") { citizenState = { screen: "survey", questionIndex: 0, answers: [], lastPoints: 0 }; renderCitizen(); }
+      if (action === "citizenNext") { if (citizenState.questionIndex < currentSurvey().questions.length - 1) { citizenState.questionIndex += 1; renderCitizen(); } }
+      if (action === "citizenBack") { if (citizenState.questionIndex === 0) citizenState.screen = "home"; else citizenState.questionIndex -= 1; renderCitizen(); }
+      if (action === "submitCitizen") submitCitizenResponse();
+      if (action === "viewWallet") { citizenState.screen = "wallet"; renderCitizen(); }
+      if (action === "citizenHome") { citizenState.screen = "home"; renderCitizen(); }
+    });
+
+    document.addEventListener("change", event => {
+      if (event.target.id === "surveySelect") { settings.activeSurveyId = event.target.value; const s = currentSurvey(); settings.activeProfileId = s.profileId; starterAggregate = createStarterRecords(25, s); saveKey(KEYS.settings, settings); renderAll(); }
+      if (event.target.id === "surveyProfile") { const s = currentSurvey(); s.profileId = event.target.value; settings.activeProfileId = event.target.value; renderAll(); }
+    });
+
+    document.addEventListener("input", event => {
+      if (["surveyFilter", "locationFilter", "priorityFilter", "responseSearch"].includes(event.target.id)) renderResponsesTable();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") document.getElementById("modalBackdrop").classList.remove("active");
+      const profileCard = event.target.closest("[data-profile-card]");
+      if (profileCard && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); settings.activeProfileId = profileCard.dataset.profileCard; saveKey(KEYS.settings, settings); renderAll(); showToast("Profile selected"); }
+    });
+
+    ensureStorage();
+    saveAllCore();
+    renderAll();
+  </script>
+</body>
+</html>
