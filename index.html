@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jina — Targeted Rewarded Citizen Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#071A2C; --cream:#F8F4EA; --white:#FFFFFF; --red:#8B1E2D;
+  --gold:#F4B942; --grey:#E7EAF0; --green:#2F855A; --muted:#6B7280;
+  --radius:16px; --shadow:0 4px 24px rgba(7,26,44,0.06); --shadow-lg:0 12px 40px rgba(7,26,44,0.12);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--cream);color:var(--navy);-webkit-font-smoothing:antialiased;}
+h1,h2,h3{margin:0;letter-spacing:-0.02em;}
+p{margin:0;color:var(--muted);line-height:1.6;}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;border:none;}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+section{padding:64px 0;}
+.section-tight{padding:48px 0;}
+
+/* NAV */
+header.nav{
+  position:sticky;top:0;z-index:50;background:rgba(248,244,234,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--grey);
+}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1120px;margin:0 auto;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--red));display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:800;}
+.logo-text{font-weight:800;font-size:18px;}
+.nav-links{display:none;gap:28px;font-size:14px;font-weight:600;color:var(--muted);}
+.nav-links a:hover{color:var(--navy);}
+@media (min-width:780px){.nav-links{display:flex;}}
+.nav-cta{display:flex;gap:10px;align-items:center;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:13px 22px;font-weight:700;font-size:14px;transition:transform .15s,box-shadow .15s;text-decoration:none;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--navy);color:var(--white);}
+.btn-primary:hover{box-shadow:var(--shadow-lg);}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-outline{background:transparent;color:var(--navy);border:1px solid var(--grey);}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-sm{padding:9px 16px;font-size:13px;border-radius:10px;}
+
+/* HERO */
+.hero{padding:80px 0 60px;}
+.hero-grid{display:grid;gap:48px;align-items:center;}
+@media (min-width:900px){.hero-grid{grid-template-columns:1.1fr 1fr;}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--grey);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--muted);}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+.hero h1{font-size:clamp(34px,6vw,56px);font-weight:800;margin:18px 0 16px;line-height:1.08;}
+.hero h1 span{color:var(--red);}
+.hero p.lead{font-size:17px;max-width:520px;}
+.power-line{margin-top:18px;font-size:15px;font-weight:700;color:var(--navy);}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;}
+
+/* HERO VISUAL */
+.flow-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:24px;}
+.flow-steps{display:flex;flex-direction:column;gap:10px;}
+.flow-step{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:var(--cream);border:1px solid var(--grey);transition:border-color .2s,background .2s;}
+.flow-step.h{border-color:var(--gold);background:rgba(244,185,66,0.1);}
+.flow-num{width:30px;height:30px;border-radius:9px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+.flow-step .ft{font-weight:700;font-size:14px;}
+.flow-step .fd{font-size:12px;color:var(--muted);}
+.flow-arrow{text-align:center;color:var(--grey);font-size:12px;}
+
+/* SECTION HEAD */
+.section-head{max-width:620px;margin-bottom:36px;}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--red);font-weight:800;margin-bottom:10px;}
+.section-head h2{font-size:clamp(26px,4vw,36px);font-weight:800;}
+.section-head p{margin-top:10px;font-size:15px;}
+
+/* CARDS / GRID */
+.grid{display:grid;gap:18px;}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;}
+.card h3{font-size:17px;margin-bottom:8px;}
+.card p{font-size:14px;}
+.icon{width:40px;height:40px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--red);}
+.icon svg{width:20px;height:20px;}
+
+/* DIFFERENCE */
+.diff{display:grid;gap:18px;}
+@media (min-width:780px){.diff{grid-template-columns:1fr 1fr;}}
+.diff .card{height:100%;}
+.diff .old h3{color:var(--muted);}
+.diff .new{border:1px solid var(--gold);}
+.diff ul{margin:10px 0 0;padding-left:18px;font-size:14px;color:var(--muted);}
+.diff li{margin-bottom:6px;}
+
+/* HOW IT WORKS — alternating */
+.flow-full{display:flex;flex-direction:column;gap:14px;}
+.flow-full .flow-step{padding:20px;}
+.flow-full .ft{font-size:16px;}
+.flow-full .fd{font-size:13px;margin-top:2px;}
+
+/* USE CASE */
+.usecase{background:var(--navy);color:var(--white);border-radius:24px;padding:40px;}
+.usecase .kicker{color:var(--gold);}
+.usecase h2{font-size:clamp(24px,4vw,34px);font-weight:800;color:var(--white);}
+.usecase p{color:rgba(255,255,255,0.65);margin-top:10px;font-size:15px;}
+.usecase-grid{display:grid;gap:16px;margin-top:28px;}
+@media (min-width:780px){.usecase-grid{grid-template-columns:repeat(3,1fr);}}
+.usecase-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:18px;}
+.usecase-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);font-weight:800;}
+.usecase-card .val{font-size:22px;font-weight:800;margin-top:6px;}
+.usecase-card .sub{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;}
+
+/* WAITLIST (retained styles reused for try-it cards) */
+.note{font-size:12px;color:var(--muted);margin-top:10px;}
+
+/* TRY IT — builder & runner */
+.try-grid{display:grid;gap:18px;}
+@media (min-width:900px){.try-grid{grid-template-columns:1fr 1fr;}}
+.card.metric{padding:18px;}
+.m-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;}
+.m-value{font-size:26px;font-weight:800;margin-top:6px;}
+.field{margin-bottom:14px;}
+.field-row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+input[type=text],input[type=number],select,textarea{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--grey);
+  font-family:inherit;font-size:14px;background:var(--cream);color:var(--navy);
+}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);background:var(--white);}
+.btn-block{width:100%;}
+hr.div{border:none;border-top:1px solid var(--grey);margin:16px 0;}
+.q-block{border:1px solid var(--grey);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--cream);}
+.q-block .field{margin-bottom:10px;}
+.opt-edit{display:flex;gap:8px;margin-bottom:8px;}
+.opt-edit input{flex:1;}
+.icon-btn{background:none;border:none;color:var(--muted);font-size:15px;padding:4px 8px;border-radius:8px;}
+.icon-btn:hover{background:var(--grey);color:var(--red);}
+.q-block-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+
+.survey-item{border:1px solid var(--grey);border-radius:12px;padding:16px;margin-bottom:14px;}
+.survey-item:last-child{margin-bottom:0;}
+.survey-item h4{font-size:16px;margin:6px 0 4px;}
+.survey-item .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;}
+.badge-grey{background:var(--grey);color:var(--muted);}
+.badge-gold{background:rgba(244,185,66,0.18);color:#9a6c0d;}
+.badge-green{background:rgba(47,133,90,0.12);color:var(--green);}
+
+/* runner */
+.qprogress{display:flex;gap:5px;margin-bottom:14px;}
+.qprogress span{flex:1;height:5px;border-radius:4px;background:var(--grey);}
+.qprogress span.done{background:var(--gold);}
+.opt-btn{
+  display:block;width:100%;text-align:left;background:var(--cream);border:1px solid var(--grey);
+  border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600;margin-bottom:10px;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.opt-btn:hover{border-color:var(--navy);}
+.opt-btn.selected{border-color:var(--gold);background:rgba(244,185,66,0.12);box-shadow:0 0 0 3px rgba(244,185,66,0.18);}
+.success-state{text-align:center;padding:20px 10px;}
+.success-state .pts{font-size:34px;font-weight:800;color:var(--gold);}
+.success-state h3{margin:8px 0 4px;}
+
+
+/* FOOTER */
+footer{border-top:1px solid var(--grey);padding:40px 0;}
+.footer-grid{display:flex;flex-direction:column;gap:16px;justify-content:space-between;align-items:flex-start;}
+@media (min-width:780px){.footer-grid{flex-direction:row;align-items:center;}}
+.footer-links{display:flex;gap:22px;font-size:13px;color:var(--muted);font-weight:600;}
+.footer-links a:hover{color:var(--navy);}
+.footnote{font-size:12px;color:var(--muted);margin-top:14px;}
+
+/* ANIM */
+.fade-up{animation:fadeUp .6s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.delay-1{animation-delay:.08s;} .delay-2{animation-delay:.16s;} .delay-3{animation-delay:.24s;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-mark">J</div>
+      <span class="logo-text">Jina</span>
+    </div>
+    <nav class="nav-links" aria-label="Page sections">
+      <a href="#how">How it works</a>
+      <a href="#difference">Why Jina</a>
+      <a href="#usecase">Use case</a>
+      <a href="#try">Try it</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#try" class="btn btn-primary btn-sm">Try it</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="fade-up">
+      <span class="eyebrow"><span class="dot"></span> Live for institutions across Bhutan</span>
+      <h1>Targeted, rewarded <span>citizen feedback</span> that institutions can act on.</h1>
+      <p class="lead">Jina helps organizations reach the right people, reward honest participation, and turn responses into decision-ready insight — in real time.</p>
+      <p class="power-line">A patient answers. A hospital learns.</p>
+      <div class="hero-actions">
+        <a href="#try" class="btn btn-primary">Try it now</a>
+        <a href="#how" class="btn btn-outline">See how it works</a>
+      </div>
+    </div>
+    <div class="flow-card fade-up delay-2">
+      <div class="flow-steps">
+        <div class="flow-step h">
+          <div class="flow-num">1</div>
+          <div><div class="ft">Ask</div><div class="fd">Create a short, targeted survey</div></div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div><div class="ft">Target</div><div class="fd">Reach the right citizens by location, time and group</div></div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div><div class="ft">Answer</div><div class="fd">Citizens respond in under two minutes</div></div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="flow-num">4</div>
+          <div><div class="ft">Reward</div><div class="fd">Citizens earn Jina Points instantly</div></div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step h">
+          <div class="flow-num">5</div>
+          <div><div class="ft">Decide</div><div class="fd">Dashboards turn answers into action</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY JINA / DIFFERENCE -->
+<section id="difference">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Why Jina</div>
+      <h2>Not another form. A feedback platform built for decisions.</h2>
+      <p>Ordinary forms collect answers and stop there. Jina helps institutions reach the right people, reward participation, and instantly understand what the data means.</p>
+    </div>
+    <div class="diff">
+      <div class="card old">
+        <h3>Ordinary survey forms</h3>
+        <ul>
+          <li>Sent to anyone, with no targeting</li>
+          <li>Low completion, no incentive to respond</li>
+          <li>Raw answers with no analysis</li>
+          <li>Manual spreadsheets to find patterns</li>
+        </ul>
+      </div>
+      <div class="card new">
+        <h3>Jina</h3>
+        <ul>
+          <li>Reaches the right citizens, by group, location and time window</li>
+          <li>Citizens earn Jina Points for trusted participation</li>
+          <li>Live dashboards turn responses into insight automatically</li>
+          <li>Clear recommendations, ready for decisions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">How it works</div>
+      <h2>From a question to a decision, in five steps.</h2>
+      <p>Jina connects institutions and citizens through one continuous loop — feedback in, insight out.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></div>
+        <h3>Ask</h3>
+        <p>Institutions create short, focused surveys using ready workflows for healthcare, government, business and community needs.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6"/></svg></div>
+        <h3>Target</h3>
+        <p>Define exactly who should respond — recent visitors, a location, an age group, or a time window — so feedback reflects real experience.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/></svg></div>
+        <h3>Answer</h3>
+        <p>Citizens receive relevant surveys in a simple mobile experience and respond in about two minutes.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Reward</h3>
+        <p>Every honest response earns Jina Points — a transparent way to recognize participation and build trust over time.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg></div>
+        <h3>Analyze</h3>
+        <p>Responses are processed in real time into live dashboards — completion, trust scores, and the issues that matter most.</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <h3>Decide</h3>
+        <p>Jina turns the top issue into a clear recommendation — so institutions know exactly what to fix first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASE -->
+<section id="usecase">
+  <div class="wrap">
+    <div class="usecase">
+      <div class="kicker">Use case</div>
+      <h2>Patient Experience Pulse</h2>
+      <p>A hospital wants to improve OPD service. Patients who recently visited answer five short questions about waiting time, medicine clarity, navigation and respect. Each response earns Jina Points — and the hospital's dashboard updates instantly.</p>
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <div class="label">Target group</div>
+          <div class="val">OPD patients</div>
+          <div class="sub">Last 30 days · Thimphu, Paro, Punakha</div>
+        </div>
+        <div class="usecase-card">
+          <div class="label">Citizen reward</div>
+          <div class="val">40 Jina Points</div>
+          <div class="sub">Per completed survey, under 2 minutes</div>
+        </div>
+        <div class="usecase-card">
+          <div class="label">Outcome</div>
+          <div class="val">Decision-ready insight</div>
+          <div class="sub">Top issue surfaced with a clear recommendation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Built for both sides</div>
+      <h2>For institutions and citizens alike.</h2>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>For institutions</h3>
+        <p>Hospitals, government offices and companies use Jina to reach the right respondents, run targeted surveys, and follow live dashboards that turn feedback into clear next steps — without spreadsheets or guesswork.</p>
+      </div>
+      <div class="card">
+        <h3>For citizens</h3>
+        <p>Citizens receive short, relevant surveys, share their honest experience, and earn Jina Points for every response — building a trusted voice that institutions can rely on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRY IT -->
+<section id="try">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Try it</div>
+      <h2>Create a survey. Answer a survey. See the loop work.</h2>
+      <p>Two ready survey workflows are set up below. Build a new one, or answer an existing survey to see how citizens earn Jina Points.</p>
+    </div>
+
+    <div class="grid grid-3" style="margin-bottom:24px;">
+      <div class="card metric"><div class="m-label">Surveys ready</div><div class="m-value" id="statSurveys">0</div></div>
+      <div class="card metric"><div class="m-label">Responses collected</div><div class="m-value" id="statResponses">0</div></div>
+      <div class="card metric"><div class="m-label">Jina Points earned</div><div class="m-value" id="statPoints">0</div></div>
+    </div>
+
+    <div class="try-grid">
+      <!-- BUILDER -->
+      <div class="card">
+        <h3>Create a survey</h3>
+        <p style="margin-bottom:16px;">Add a title, choose a category and reward, then build your questions.</p>
+        <form id="surveyForm">
+          <div class="field">
+            <label for="surveyTitle">Survey title</label>
+            <input type="text" id="surveyTitle" required placeholder="e.g. Community Needs Pulse">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="surveyCategory">Category</label>
+              <select id="surveyCategory">
+                <option>Healthcare</option>
+                <option>Government Office</option>
+                <option>Company</option>
+                <option>Citizen Engagement</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="surveyPoints">Reward (Jina Points)</label>
+              <input type="number" id="surveyPoints" min="5" step="5" value="25">
+            </div>
+          </div>
+          <hr class="div">
+          <label>Questions</label>
+          <div id="questionsBuilder"></div>
+          <button type="button" class="btn btn-outline btn-sm" id="addQuestionBtn">Add question</button>
+          <hr class="div">
+          <button type="submit" class="btn btn-primary btn-block">Save Survey</button>
+        </form>
+      </div>
+
+      <!-- SURVEY LIST / RUNNER -->
+      <div class="card">
+        <div id="surveyPanel"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="logo">
+        <div class="logo-mark">J</div>
+        <span class="logo-text">Jina</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer links">
+        <a href="#how">How it works</a>
+        <a href="#difference">Why Jina</a>
+        <a href="#usecase">Use case</a>
+        <a href="#try">Try it</a>
+      </nav>
+    </div>
+    <div class="footnote">Jina helps institutions move from guesswork to data-driven decisions, one rewarded response at a time. Surveys and responses on this page are stored locally in this browser.</div>
+  </div>
+</footer>
+
+<script>
+/* ---------- Storage helpers ---------- */
+function safeGet(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function safeSet(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* ignore */ }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Default data ---------- */
+const SURVEYS_KEY = 'jina_try_surveys';
+const STATS_KEY = 'jina_try_stats';
+
+const DEFAULT_SURVEYS = [
+  {
+    id:'s1', title:'Patient Experience Pulse', category:'Healthcare', points:40,
+    questions:[
+      { text:'How long did you wait?', options:['Under 15 min','15–30 min','30–60 min','Over 60 min'] },
+      { text:'Were medicine instructions clear?', options:['Very clear','Somewhat clear','Not clear','Did not receive medicine'] },
+      { text:'Was the service respectful?', options:['Yes','Mostly','Not really','No'] },
+      { text:'What should improve first?', options:['Registration queue','Medicine instructions','Cleanliness','Signage','Staff communication'] }
+    ]
+  },
+  {
+    id:'s2', title:'Customer Service Pulse', category:'Company', points:30,
+    questions:[
+      { text:'How would you rate our service?', options:['Excellent','Good','Average','Poor'] },
+      { text:'Was your issue resolved?', options:['Yes, fully','Partially','Not resolved','Did not need resolution'] },
+      { text:'Would you recommend us?', options:['Definitely','Probably','Not sure','No'] },
+      { text:'What should improve first?', options:['Response time','Staff communication','Product quality','Pricing clarity','Support availability'] }
+    ]
+  }
+];
+
+let surveys = safeGet(SURVEYS_KEY, null) || DEFAULT_SURVEYS;
+let stats = safeGet(STATS_KEY, null) || { responses:0, points:0 };
+let runner = null; // { surveyId, index, answers }
+
+function saveSurveys(){ safeSet(SURVEYS_KEY, surveys); }
+function saveStats(){ safeSet(STATS_KEY, stats); }
+function getSurvey(id){ return surveys.find(s=>s.id===id); }
+
+const categoryColor = { 'Healthcare':'badge-grey', 'Company':'badge-grey', 'Government Office':'badge-grey', 'Citizen Engagement':'badge-grey' };
+
+/* ---------- Stats ---------- */
+function renderStats(){
+  document.getElementById('statSurveys').textContent = surveys.length;
+  document.getElementById('statResponses').textContent = stats.responses;
+  document.getElementById('statPoints').textContent = stats.points;
+}
+
+/* ---------- Survey list ---------- */
+function renderSurveyPanel(){
+  if(runner){ renderRunner(); return; }
+
+  let html = '<h3>Available surveys</h3><p style="margin-bottom:16px;">Pick a survey to answer and earn Jina Points.</p>';
+  html += surveys.map(s=>
+    '<div class="survey-item">'+
+      '<div class="badges">'+
+        '<span class="badge badge-grey">'+escapeHtml(s.category)+'</span>'+
+        '<span class="badge badge-gold">'+s.points+' Jina Points</span>'+
+        '<span class="badge badge-grey">'+s.questions.length+' questions</span>'+
+      '</div>'+
+      '<h4>'+escapeHtml(s.title)+'</h4>'+
+      '<button class="btn btn-primary btn-sm answer-btn" data-id="'+s.id+'">Answer survey</button>'+
+    '</div>'
+  ).join('');
+
+  document.getElementById('surveyPanel').innerHTML = html;
+
+  document.querySelectorAll('.answer-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      runner = { surveyId: btn.dataset.id, index:0, answers:[] };
+      renderRunner();
+    });
+  });
+}
+
+/* ---------- Runner ---------- */
+function renderRunner(){
+  const survey = getSurvey(runner.surveyId);
+  if(!survey){ runner=null; renderSurveyPanel(); return; }
+
+  if(runner.done){
+    document.getElementById('surveyPanel').innerHTML =
+      '<div class="success-state">'+
+        '<div class="pts">+'+survey.points+'</div>'+
+        '<h3>Thank you.</h3>'+
+        '<p>Your response has been recorded and the response count above has updated.</p>'+
+        '<div class="btn-row" style="margin-top:18px;justify-content:center;display:flex;gap:10px;flex-wrap:wrap;">'+
+          '<button class="btn btn-outline btn-sm" id="answerAgainBtn">Answer again</button>'+
+          '<button class="btn btn-primary btn-sm" id="backToSurveysBtn">Back to surveys</button>'+
+        '</div>'+
+      '</div>';
+    document.getElementById('answerAgainBtn').addEventListener('click', ()=>{
+      runner = { surveyId: survey.id, index:0, answers:[] };
+      renderRunner();
+    });
+    document.getElementById('backToSurveysBtn').addEventListener('click', ()=>{
+      runner = null; renderSurveyPanel();
+    });
+    return;
+  }
+
+  const q = survey.questions[runner.index];
+  const total = survey.questions.length;
+
+  let progress = '<div class="qprogress">';
+  for(let i=0;i<total;i++) progress += '<span class="'+(i<=runner.index ? '' : '')+(i<runner.index?' done':'')+'"></span>';
+  progress += '</div>';
+
+  let opts = q.options.map((o,i)=>
+    '<button class="opt-btn" data-opt="'+i+'">'+escapeHtml(o)+'</button>'
+  ).join('');
+
+  document.getElementById('surveyPanel').innerHTML =
+    '<div class="badges" style="margin-bottom:10px;">'+
+      '<span class="badge badge-grey">'+escapeHtml(survey.title)+'</span>'+
+      '<span class="badge badge-gold">'+survey.points+' Jina Points</span>'+
+    '</div>'+
+    '<div class="muted-small" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Question '+(runner.index+1)+' of '+total+'</div>'+
+    progress+
+    '<h3 style="margin:6px 0 14px;font-size:18px;">'+escapeHtml(q.text)+'</h3>'+
+    '<div role="radiogroup" aria-label="'+escapeHtml(q.text)+'">'+opts+'</div>'+
+    (runner.index>0 ? '<button class="btn btn-outline btn-sm" id="backQBtn" style="margin-top:6px;">Back</button>' : '')+
+    '<button class="btn btn-outline btn-sm" id="cancelRunBtn" style="margin-top:6px;margin-left:8px;">Cancel</button>';
+
+  document.querySelectorAll('#surveyPanel .opt-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      runner.answers[runner.index] = q.options[parseInt(btn.dataset.opt,10)];
+      if(runner.index < total-1){
+        runner.index++;
+        renderRunner();
+      } else {
+        stats.responses += 1;
+        stats.points += survey.points;
+        saveStats();
+        renderStats();
+        runner.done = true;
+        renderRunner();
+      }
+    });
+  });
+  const backBtn = document.getElementById('backQBtn');
+  if(backBtn) backBtn.addEventListener('click', ()=>{ runner.index--; renderRunner(); });
+  document.getElementById('cancelRunBtn').addEventListener('click', ()=>{ runner=null; renderSurveyPanel(); });
+}
+
+/* ---------- Builder ---------- */
+function addQuestionBlock(prefill){
+  const wrap = document.getElementById('questionsBuilder');
+  const div = document.createElement('div');
+  div.className = 'q-block';
+  const qText = prefill ? prefill.text : '';
+  const opts = prefill ? prefill.options : ['Option 1','Option 2'];
+  div.innerHTML =
+    '<div class="field"><label>Question text</label><input type="text" class="qtext" placeholder="e.g. How was your experience?" value="'+escapeHtml(qText)+'"></div>'+
+    '<label>Options</label>'+
+    opts.map(o=>'<div class="opt-edit"><input type="text" class="opttext" value="'+escapeHtml(o)+'"><button type="button" class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button></div>').join('')+
+    '<div class="q-block-actions">'+
+      '<button type="button" class="btn btn-outline btn-sm add-opt-btn">Add option</button>'+
+      '<button type="button" class="btn btn-outline btn-sm remove-q-btn">Remove question</button>'+
+    '</div>';
+  wrap.appendChild(div);
+
+  div.querySelectorAll('.remove-opt-btn').forEach(b=>b.addEventListener('click', ()=>b.closest('.opt-edit').remove()));
+  div.querySelector('.add-opt-btn').addEventListener('click', ()=>{
+    const opt = document.createElement('div');
+    opt.className = 'opt-edit';
+    opt.innerHTML = '<input type="text" class="opttext" placeholder="New option"><button type="button" class="icon-btn remove-opt-btn" aria-label="Remove option">✕</button>';
+    div.querySelector('.q-block-actions').before(opt);
+    opt.querySelector('.remove-opt-btn').addEventListener('click', ()=>opt.remove());
+  });
+  div.querySelector('.remove-q-btn').addEventListener('click', ()=>{
+    if(document.querySelectorAll('#questionsBuilder .q-block').length > 1) div.remove();
+  });
+}
+
+document.getElementById('addQuestionBtn').addEventListener('click', ()=>addQuestionBlock());
+
+// start the builder with two ready question blocks
+addQuestionBlock({ text:'How would you rate this overall?', options:['Excellent','Good','Average','Poor'] });
+addQuestionBlock({ text:'What should improve first?', options:['Option A','Option B','Option C'] });
+
+document.getElementById('surveyForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const title = document.getElementById('surveyTitle').value.trim();
+  const category = document.getElementById('surveyCategory').value;
+  const points = parseInt(document.getElementById('surveyPoints').value, 10) || 25;
+  if(!title) return;
+
+  const questions = [];
+  document.querySelectorAll('#questionsBuilder .q-block').forEach(qb=>{
+    const text = qb.querySelector('.qtext').value.trim();
+    const options = [...qb.querySelectorAll('.opttext')].map(i=>i.value.trim()).filter(Boolean);
+    if(text && options.length >= 2) questions.push({ text, options });
+  });
+  if(questions.length === 0) return;
+
+  const survey = { id:'s'+Date.now(), title, category, points, questions };
+  surveys.push(survey);
+  saveSurveys();
+  renderStats();
+  renderSurveyPanel();
+
+  // reset form
+  this.reset();
+  document.getElementById('surveyPoints').value = 25;
+  document.getElementById('questionsBuilder').innerHTML = '';
+  addQuestionBlock({ text:'How would you rate this overall?', options:['Excellent','Good','Average','Poor'] });
+  addQuestionBlock({ text:'What should improve first?', options:['Option A','Option B','Option C'] });
+
+  document.getElementById('surveyPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+/* ---------- Init ---------- */
+renderStats();
+renderSurveyPanel();
+
+/* ---------- Reveal animations on scroll ---------- */
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('fade-up');
+      observer.unobserve(entry.target);
+    }
+  });
+},{threshold:0.15});
+document.querySelectorAll('section .card, .usecase').forEach(el=>{
+  el.style.opacity = '0';
+  el.style.animationFillMode = 'forwards';
+  observer.observe(el);
+});
+setTimeout(()=>{ document.querySelectorAll('section .card, .usecase').forEach(el=>{ el.style.opacity='1'; }); }, 1200);
+</script>
+</body>
+</html>
